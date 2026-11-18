@@ -1,0 +1,2316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
+<title>OptiCare Manager (Old Tab Version)</title>
+<style>
+  :root{
+    --bg-main:#F3F5F7; --bg-card:#FFFFFF; --input-bg:#FFFFFF; --row-hover:#F7F9FA;
+    --sidebar:#0A2240; --sidebar-hover:#123159; --sidebar-active:#154776; --sidebar-accent:#2FA8C9;
+    --primary:#0F6E8C; --primary-hover:#0C566E; --accent:#C79A3E; --accent-hover:#A97F2D;
+    --success:#2E8B57; --danger:#B33A3A; --danger-hover:#932F2F;
+    --text-main:#1B2430; --text-muted:#5B6B79; --text-on-dark:#EAF1F6; --text-on-dark-muted:#8FA6BB;
+    --border:#E1E6EA; --shadow:0 1px 2px rgba(16,24,40,0.06), 0 1px 3px rgba(16,24,40,0.06);
+    --shadow-md:0 4px 10px rgba(16,24,40,0.08);
+  }
+  body.dark{
+    --bg-main:#0E1620; --bg-card:#16202C; --input-bg:#1D2938; --row-hover:#1B2632;
+    --sidebar:#060C15; --sidebar-hover:#0F1B29; --sidebar-active:#153048; --sidebar-accent:#2FA8C9;
+    --primary:#1C8CB0; --primary-hover:#28A5CC; --accent:#D8AE55; --accent-hover:#E6C378;
+    --success:#3FAE72; --danger:#D0605A; --danger-hover:#DD7770;
+    --text-main:#E8EEF3; --text-muted:#8FA0B0; --text-on-dark:#EAF1F6; --text-on-dark-muted:#7C93A8;
+    --border:#26313F; --shadow:0 1px 2px rgba(0,0,0,0.35); --shadow-md:0 4px 14px rgba(0,0,0,0.4);
+  }
+  /* Colorblind-Friendly Mode — Okabe-Ito safe palette, avoids red-green & blue-yellow pairs,
+     plus non-color cues (patterns/borders) so information never relies on hue alone */
+  body.colorblind{
+    --bg-main:#F5F5F5; --bg-card:#FFFFFF; --input-bg:#FFFFFF; --row-hover:#ECECEC;
+    --sidebar:#08243D; --sidebar-hover:#0F3455; --sidebar-active:#15466F; --sidebar-accent:#E69F00;
+    --primary:#0072B2; --primary-hover:#005A8C; --accent:#E69F00; --accent-hover:#CC8E00;
+    --success:#009E73; --danger:#D55E00; --danger-hover:#B34E00;
+    --text-main:#1B2430; --text-muted:#55606B; --text-on-dark:#EAF1F6; --text-on-dark-muted:#8FA6BB;
+    --border:#CBD5DD; --shadow:0 1px 2px rgba(16,24,40,0.06); --shadow-md:0 4px 10px rgba(16,24,40,0.08);
+  }
+  body.colorblind .btn-danger{ border:2px dashed rgba(0,0,0,0.35); }
+  body.colorblind .danger-zone{
+    background-image:repeating-linear-gradient(45deg, rgba(213,94,0,0.07), rgba(213,94,0,0.07) 8px, transparent 8px, transparent 16px);
+  }
+  html{ height:100%; overflow:hidden; overscroll-behavior:none; }
+  *{box-sizing:border-box;}
+  body{ margin:0; font-family:"Segoe UI", Arial, sans-serif; background:var(--bg-main); color:var(--text-main);
+    height:100vh; overflow:hidden; overscroll-behavior:none; -webkit-font-smoothing:antialiased; transition:background .15s ease, color .15s ease; }
+  #app{ display:flex; height:100vh; }
+
+  #sidebar{ width:224px; background:var(--sidebar); flex-shrink:0; display:flex; flex-direction:column; padding:26px 12px 16px 12px; }
+  #sidebar .logo{ padding:0 8px 20px 8px; display:flex; align-items:center; gap:10px; }
+  #sidebar .logo .logo-icon{ background:#FFFFFF; border-radius:10px; box-shadow:0 2px 6px rgba(0,0,0,0.25);
+    flex-shrink:0; display:flex; align-items:center; justify-content:center; width:72px; height:46px; padding:4px 6px; }
+  #sidebar .logo .logo-icon svg{ width:32px; height:32px; color:var(--sidebar-accent); flex-shrink:0; }
+  #sidebar .logo .logo-icon img{ width:100%; height:100%; object-fit:contain; display:block; }
+  #sidebar .logo .logo-text{ flex:1; min-width:0; }
+  #sidebar .logo h1{ color:var(--text-on-dark); font-size:16.5px; margin:0; font-weight:700; line-height:1.25;
+    overflow:hidden; text-overflow:ellipsis; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; }
+  .nav-group{ display:flex; flex-direction:column; gap:2px; }
+  .nav-btn{ display:flex; align-items:center; gap:11px; width:100%; background:transparent; border:none;
+    border-left:3px solid transparent; color:var(--text-on-dark-muted); font-size:13px; font-weight:600;
+    text-align:left; padding:11px 12px; border-radius:8px; cursor:pointer; font-family:inherit;
+    transition:background .12s ease, color .12s ease; }
+  .nav-btn svg{ flex-shrink:0; }
+  .nav-btn:hover{ background:var(--sidebar-hover); color:var(--text-on-dark); }
+  .nav-btn.active{ background:var(--sidebar-active); color:var(--text-on-dark); border-left-color:var(--sidebar-accent); }
+  .nav-divider{ height:1px; background:rgba(255,255,255,0.08); margin:10px 4px; }
+  .nav-spacer{ flex:1; }
+  #sidebar .footer-note{ color:var(--text-on-dark-muted); font-size:10.5px; padding:0 8px; line-height:1.6; opacity:.85; }
+  #sidebar .footer-note b{ color:var(--text-on-dark-muted); }
+
+  #main{ flex:1; display:flex; flex-direction:column; min-width:0; }
+  #topbar{ height:64px; background:var(--bg-card); border-bottom:1px solid var(--border); display:flex;
+    align-items:center; padding:0 24px; flex-shrink:0; gap:12px; }
+  .search-wrap{ position:relative; width:560px; max-width:60%; }
+  .search-wrap svg{ position:absolute; left:12px; top:50%; transform:translateY(-50%); color:var(--text-muted); }
+  #globalSearch{ width:100%; height:38px; border:1px solid var(--border); border-radius:8px; padding:0 14px 0 38px;
+    font-size:13px; background:var(--bg-main); font-family:inherit; color:var(--text-main); }
+  #globalSearch:focus{ outline:none; border-color:var(--primary); }
+
+  #page{ flex:1; overflow-y:auto; overscroll-behavior-y:contain; -webkit-overflow-scrolling:touch; padding:26px 28px; }
+  #page.fade{ animation:fadeIn .22s ease; }
+  @keyframes fadeIn{ from{opacity:0; transform:translateY(5px);} to{opacity:1; transform:translateY(0);} }
+
+  /* Printing: show only the bill, hide the rest of the app (sidebar, topbar, buttons) */
+  @media print{
+    html, body{ height:auto !important; overflow:visible !important; background:#fff !important; }
+    body *{ visibility:hidden !important; }
+    #billPrintArea, #billPrintArea *{ visibility:visible !important; }
+    #billPrintArea{ position:absolute; left:0; top:0; width:100%; box-shadow:none !important; border-radius:0 !important; }
+    .no-print{ display:none !important; }
+  }
+
+  h1.title{ font-size:25px; margin:0; font-weight:700; letter-spacing:-.01em; }
+  p.subtitle{ color:var(--text-muted); margin:4px 0 0 0; font-size:13px; }
+  .header-row{ display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:20px; gap:16px; flex-wrap:wrap; }
+
+  .btn{ border:none; border-radius:8px; padding:10px 16px; font-weight:700; font-size:13px; cursor:pointer;
+    font-family:inherit; display:inline-flex; align-items:center; gap:7px; transition:background .12s ease, transform .05s ease; }
+  .btn:active{ transform:translateY(1px); }
+  .btn-primary{ background:var(--primary); color:white; box-shadow:var(--shadow); }
+  .btn-primary:hover{ background:var(--primary-hover); }
+  .btn-accent{ background:var(--accent); color:white; box-shadow:var(--shadow); }
+  .btn-accent:hover{ background:var(--accent-hover); }
+  .btn-danger{ background:var(--danger); color:white; box-shadow:var(--shadow); }
+  .btn-danger:hover{ background:var(--danger-hover); }
+  .btn-outline{ background:transparent; border:1px solid var(--border); color:var(--text-main); }
+  .btn-outline:hover{ background:var(--row-hover); }
+  .btn-small{ padding:7px 11px; font-size:12px; border-radius:6px; }
+
+  .card{ background:var(--bg-card); border:1px solid var(--border); border-radius:12px; padding:20px;
+    margin-bottom:16px; box-shadow:var(--shadow); }
+
+  .stats-grid{ display:grid; grid-template-columns:repeat(auto-fit, minmax(190px,1fr)); gap:12px; margin-bottom:22px; }
+  .stat-card{ background:var(--bg-card); border:1px solid var(--border); border-radius:12px; display:flex;
+    overflow:hidden; box-shadow:var(--shadow); transition:box-shadow .15s ease, transform .1s ease; }
+  .stat-card:hover{ box-shadow:var(--shadow-md); transform:translateY(-1px); }
+  .stat-bar{ width:5px; flex-shrink:0; }
+  .stat-body{ padding:14px 16px; min-width:0; }
+  .stat-title{ font-size:10.5px; font-weight:700; color:var(--text-muted); letter-spacing:.04em; white-space:nowrap; }
+  .stat-value{ font-size:27px; font-weight:700; margin:3px 0; letter-spacing:-.02em; }
+  .stat-sub{ font-size:11px; color:var(--text-muted); }
+
+  .charts-row{ display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:6px; }
+  @media (max-width: 980px){ .charts-row{ grid-template-columns:1fr; } }
+  .chart-card-title{ font-size:14px; font-weight:700; margin-bottom:2px; }
+  .chart-card-sub{ font-size:11.5px; color:var(--text-muted); margin-bottom:10px; }
+  .legend{ display:flex; gap:16px; margin-top:8px; }
+  .legend-item{ display:flex; align-items:center; gap:6px; font-size:11.5px; color:var(--text-muted); }
+  .legend-dot{ width:9px; height:9px; border-radius:2px; display:inline-block; }
+
+  .table-scroll{ overflow-x:auto; }
+  table{ width:100%; border-collapse:collapse; }
+  thead th{ text-align:left; font-size:11px; color:var(--text-muted); font-weight:700; background:var(--bg-main);
+    padding:11px 13px; border-bottom:1px solid var(--border); text-transform:uppercase; letter-spacing:.03em; white-space:nowrap; }
+  tbody td{ padding:11px 13px; font-size:13px; border-bottom:1px solid var(--border); white-space:nowrap; }
+  tbody tr:last-child td{ border-bottom:none; }
+  tbody tr:hover{ background:var(--row-hover); }
+  tbody tr.clickable{ cursor:pointer; }
+  .empty-msg{ padding:34px; text-align:center; color:var(--text-muted); font-size:13px; }
+
+  .stars{ color:var(--accent); letter-spacing:2px; }
+  .stars .off{ color:var(--border); }
+
+  input[type=text], input[type=tel], input[type=number], input[type=password], textarea, select{
+    width:100%; border:1px solid var(--border); border-radius:8px; padding:9px 12px; font-size:13px;
+    font-family:inherit; background:var(--input-bg); color:var(--text-main); transition:border-color .12s ease; }
+  input:focus, textarea:focus, select:focus{ outline:none; border-color:var(--primary); }
+  label.field-label{ display:block; font-size:11.5px; font-weight:700; color:var(--text-muted); margin-bottom:5px;
+    text-transform:uppercase; letter-spacing:.02em; }
+  .form-row{ display:flex; gap:20px; margin-bottom:14px; flex-wrap:wrap; }
+  .form-col{ flex:1; min-width:180px; }
+
+  .eye-row{ display:flex; align-items:flex-end; gap:14px; margin-bottom:10px; flex-wrap:wrap; }
+  .eye-row .eye-label{ width:70px; font-weight:700; color:var(--primary); font-size:13px; padding-bottom:9px; }
+  .eye-field{ width:72px; }
+  .eye-field label{ display:block; font-size:10.5px; color:var(--text-muted); text-align:center; margin-bottom:3px; text-transform:uppercase; }
+  .eye-field input{ text-align:center; padding:7px 4px; }
+
+  .notes-box{ background:var(--bg-main); border-radius:8px; padding:12px 14px; font-size:13px; margin-top:14px; border:1px solid var(--border); }
+  .section-title{ font-size:15px; font-weight:700; margin:26px 0 10px 0; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; }
+
+  .modal-overlay{ position:fixed; top:0;right:0;bottom:0;left:0; background:rgba(6,15,28,0.5); display:none; align-items:center;
+    justify-content:center; z-index:100; padding:20px; }
+  .modal-overlay.open{ display:flex; }
+  .modal{ background:var(--bg-card); border-radius:14px; width:460px; max-width:100%; max-height:88vh;
+    display:flex; flex-direction:column; overflow:hidden; box-shadow:0 12px 40px rgba(0,0,0,0.25); }
+  .modal-header{ padding:22px 24px 4px 24px; flex-shrink:0; }
+  .modal-header h2{ margin:0; font-size:17px; }
+  .modal-scroll{ padding:14px 24px; overflow-y:auto; overscroll-behavior-y:contain; -webkit-overflow-scrolling:touch; flex:1; min-height:0; }
+  .modal-actions{ padding:16px 24px; border-top:1px solid var(--border); display:flex; gap:10px; flex-shrink:0; background:var(--bg-card); }
+
+  .danger-zone{ border:1px solid var(--danger); border-radius:10px; padding:16px; background:rgba(179,58,58,0.05); }
+  .danger-zone p{ font-size:12.5px; color:var(--text-muted); margin:4px 0 12px 0; }
+
+  .theme-toggle{ display:flex; gap:10px; flex-wrap:wrap; }
+  .theme-option{ flex:1 1 130px; border:1.5px solid var(--border); border-radius:10px; padding:14px; cursor:pointer;
+    text-align:center; font-size:12.5px; font-weight:600; color:var(--text-muted); transition:border-color .12s ease, color .12s ease; }
+  .theme-option.active{ border-color:var(--primary); color:var(--primary); background:rgba(15,110,140,0.06); }
+  .theme-option svg{ display:block; margin:0 auto 6px auto; }
+  .color-swatch-row{ display:flex; align-items:center; gap:10px; }
+  .color-swatch-row input[type=color]{ width:44px; height:36px; padding:2px; border:1px solid var(--border);
+    border-radius:6px; cursor:pointer; background:var(--input-bg); }
+  .color-hex-label{ font-size:12px; color:var(--text-muted); font-family:Consolas, monospace; }
+
+  .filter-tabs{ display:flex; gap:8px; margin-bottom:16px; flex-wrap:wrap; }
+  .lock-screen{ max-width:420px; margin:60px auto 0 auto; text-align:center; }
+  .lock-icon{ color:var(--primary); margin-bottom:14px; }
+  .price-total-box{ background:var(--bg-main); border:1px solid var(--border); border-radius:8px; padding:12px 14px; margin-top:4px; }
+  .chart-scroll{ overflow-x:auto; padding-bottom:2px; }
+  .lens-section{ margin-top:14px; padding-top:14px; border-top:1px solid var(--border); }
+  .lens-toggle{ display:flex; gap:8px; margin-bottom:10px; }
+  .lens-option{ flex:1; border:1.5px solid var(--border); border-radius:8px; padding:9px; cursor:pointer;
+    text-align:center; font-size:12.5px; font-weight:600; color:var(--text-muted); transition:border-color .12s ease, color .12s ease; }
+  .lens-option.active{ border-color:var(--primary); color:var(--primary); background:rgba(15,110,140,0.06); }
+  .import-input{ display:none; }
+
+  /* --------------------------- Mobile / Responsive --------------------------- */
+  .menu-toggle-btn{ display:none; background:transparent; border:none; cursor:pointer; padding:8px;
+    border-radius:8px; color:var(--text-main); align-items:center; justify-content:center; flex-shrink:0; }
+  .menu-toggle-btn:hover{ background:var(--row-hover); }
+  .menu-toggle-btn:active{ transform:translateY(1px); }
+  .sidebar-backdrop{ display:none; position:fixed; top:0;right:0;bottom:0;left:0; background:rgba(6,15,28,0.45); z-index:90; }
+  .sidebar-backdrop.open{ display:block; }
+  body.rtl #topbar{ flex-direction:row-reverse; }
+
+  @media (max-width: 860px){
+    .menu-toggle-btn{ display:flex; }
+    #sidebar{ position:fixed; top:0; bottom:0; left:0; z-index:95; height:100vh;
+      transform:translateX(-100%); transition:transform .22s ease; box-shadow:0 0 24px rgba(0,0,0,0.3); }
+    #sidebar.open{ transform:translateX(0); }
+    body.rtl #sidebar{ left:auto; right:0; transform:translateX(100%); }
+    body.rtl #sidebar.open{ transform:translateX(0); }
+
+    #topbar{ padding:0 14px; gap:6px; }
+    .search-wrap{ width:100%; max-width:none; }
+
+    #page{ padding:18px 14px; }
+    h1.title{ font-size:20px; }
+    .stat-value{ font-size:22px; }
+    .stats-grid{ grid-template-columns:1fr 1fr; gap:10px; }
+
+    .modal-overlay{ padding:0; align-items:stretch; }
+    .modal{ width:100%; max-width:100%; height:100%; max-height:100vh; border-radius:0; }
+
+    .lock-screen{ margin:30px auto 0 auto; }
+  }
+
+  @media (max-width: 480px){
+    .stats-grid{ grid-template-columns:1fr; }
+    .theme-option{ flex:1 1 100px; }
+  }
+
+  /* --------------------------- RTL support (Urdu / Arabic) --------------------------- */
+  body.rtl #app{ flex-direction:row-reverse; }
+  body.rtl .nav-btn{ flex-direction:row-reverse; text-align:right; border-left:none; border-right:3px solid transparent; }
+  body.rtl .nav-btn.active{ border-right-color:var(--sidebar-accent); }
+  body.rtl #sidebar .logo{ flex-direction:row-reverse; }
+  body.rtl .search-wrap svg{ left:auto; right:12px; }
+  body.rtl #globalSearch{ padding:0 38px 0 14px; text-align:right; }
+  body.rtl .header-row{ flex-direction:row-reverse; }
+  body.rtl thead th{ text-align:right; }
+  body.rtl tbody td{ text-align:right; }
+  body.rtl .stat-card{ flex-direction:row-reverse; }
+  body.rtl .form-col label.field-label, body.rtl label.field-label{ text-align:right; }
+  body.rtl .card, body.rtl .modal, body.rtl .lock-screen{ text-align:right; }
+  body.rtl .btn{ flex-direction:row-reverse; }
+  body.rtl .section-title{ flex-direction:row-reverse; }
+  .alert-overlay{ position:fixed; top:0;right:0;bottom:0;left:0; background:rgba(6,15,28,0.55); display:none; align-items:center;
+    justify-content:center; z-index:1000; padding:20px; }
+  .alert-overlay.open{ display:flex; }
+  .alert-box{ background:var(--bg-card); border-radius:14px; width:380px; max-width:100%; box-shadow:var(--shadow-md);
+    padding:22px 22px 18px 22px; }
+  .alert-message{ font-size:13.5px; color:var(--text-main); line-height:1.5; white-space:pre-line; margin-bottom:18px; }
+  .alert-buttons{ display:flex; justify-content:flex-end; gap:10px; }
+  .chart-bar{ transition:opacity .12s ease; cursor:default; }
+  .chart-bar:hover{ opacity:0.78; }
+</style>
+</head>
+<body>
+
+<div id="app">
+  <div id="sidebar">
+    <div class="logo">
+      <span class="logo-icon" id="sidebarLogoSlot"></span>
+      <div class="logo-text"><h1 id="shopNameDisplay">OptiCare</h1><div style="font-size:11px;font-weight:700;opacity:.75;letter-spacing:.5px;margin-top:2px">OLD TAB VERSION</div></div>
+    </div>
+    <div class="nav-group">
+      <button class="nav-btn" data-nav="dashboard"></button>
+      <button class="nav-btn" data-nav="customers"></button>
+      <button class="nav-btn" data-nav="form"></button>
+      <button class="nav-btn" data-nav="workshop"></button>
+      <button class="nav-btn" data-nav="todo"></button>
+    </div>
+    <div class="nav-divider"></div>
+    <div class="nav-group">
+      <button class="nav-btn" data-nav="settings"></button>
+      <button class="nav-btn" data-nav="adminstats"></button>
+      <button class="nav-btn" data-nav="adminsettings"></button>
+    </div>
+    <div class="nav-spacer"></div>
+    <div class="footer-note" id="sidebarFooterText">
+      Data stored locally in this browser,<br>on this computer only.<br><br>
+      <b>Made by Developer Zohaib Hassan</b><br>Email: developerzohaibhassan@gmail.com
+    </div>
+  </div>
+
+  <div id="main">
+    <div id="topbar">
+      <button class="menu-toggle-btn" id="menuToggleBtn" aria-label="Menu" onclick="toggleMobileSidebar()">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+      </button>
+      <div class="search-wrap">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+        <input id="globalSearch" type="text" placeholder="Search customer by name, phone, or ID (e.g. OPT-0001) — press Enter">
+      </div>
+    </div>
+    <div id="page"></div>
+  </div>
+  <div class="sidebar-backdrop" id="sidebarBackdrop" onclick="closeMobileSidebar()"></div>
+</div>
+
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal" id="modalBody"></div>
+</div>
+<div class="alert-overlay" id="alertOverlay">
+  <div class="alert-box">
+    <div class="alert-message" id="alertMessage"></div>
+    <div class="alert-buttons" id="alertButtons"></div>
+  </div>
+</div>
+<noscript><div style="padding:20px;font:18px sans-serif">JavaScript is OFF in this viewer. Open the app in a browser or APK.</div></noscript><script>(function(){window.onerror=function(m,u,l,c){try{var d=document.createElement('div');d.style.cssText='position:fixed;left:0;right:0;top:0;z-index:99999;background:#fff;color:#b00;font:14px monospace;padding:10px;border:3px solid #b00;white-space:pre-wrap';d.textContent='ERROR: '+m+' (line '+l+')';(document.body||document.documentElement).appendChild(d);}catch(e){}};})();
+(function(){
+var P=String.prototype,A=Array.prototype,O=Object;
+function d(o,n,f){ if(!o[n]) O.defineProperty(o,n,{value:f,writable:true,configurable:true}); }
+d(P,'includes',function(s,i){return this.indexOf(s,i||0)!==-1;});
+d(P,'startsWith',function(s,i){i=i||0;return this.substr(i,s.length)===s;});
+d(P,'endsWith',function(s){var l=this.length-s.length;return l>=0&&this.indexOf(s,l)===l;});
+d(P,'repeat',function(n){var r='',i;for(i=0;i<n;i++)r+=this;return r;});
+d(P,'padStart',function(n,c){var s=String(this);c=c===undefined?' ':String(c);while(s.length<n)s=c+s;return s.slice(s.length-Math.max(n,String(this).length));});
+d(P,'padEnd',function(n,c){var s=String(this);c=c===undefined?' ':String(c);while(s.length<n)s+=c;return s.slice(0,Math.max(n,String(this).length));});
+d(A,'includes',function(x){for(var i=0;i<this.length;i++){if(this[i]===x||(x!==x&&this[i]!==this[i]))return true;}return false;});
+d(A,'find',function(f,t){for(var i=0;i<this.length;i++){if(f.call(t,this[i],i,this))return this[i];}return undefined;});
+d(A,'findIndex',function(f,t){for(var i=0;i<this.length;i++){if(f.call(t,this[i],i,this))return i;}return -1;});
+d(A,'flatMap',function(f,t){var r=[];for(var i=0;i<this.length;i++){var v=f.call(t,this[i],i,this);if(Array.isArray(v))r.push.apply(r,v);else r.push(v);}return r;});
+d(A,'fill',function(v){for(var i=0;i<this.length;i++)this[i]=v;return this;});
+d(O,'assign',function(t){for(var i=1;i<arguments.length;i++){var s=arguments[i];if(s)for(var k in s)if(O.prototype.hasOwnProperty.call(s,k))t[k]=s[k];}return t;});
+d(O,'values',function(o){return O.keys(o).map(function(k){return o[k];});});
+d(O,'entries',function(o){return O.keys(o).map(function(k){return [k,o[k]];});});
+d(Array,'from',function(x){return A.slice.call(x);});
+if(window.NodeList&&!NodeList.prototype.forEach)NodeList.prototype.forEach=A.forEach;
+if(window.HTMLCollection&&!HTMLCollection.prototype.forEach)HTMLCollection.prototype.forEach=A.forEach;
+// Set that accepts an array in the constructor
+var ok=false;try{ok=new Set([1,2]).size===2;}catch(e){}
+if(!ok){
+  var S=function(a){this._=[];if(a)for(var i=0;i<a.length;i++)this.add(a[i]);};
+  S.prototype.add=function(v){if(this._.indexOf(v)<0)this._.push(v);this.size=this._.length;return this;};
+  S.prototype.has=function(v){return this._.indexOf(v)>=0;};
+  S.prototype['delete']=function(v){var i=this._.indexOf(v);if(i>=0)this._.splice(i,1);this.size=this._.length;return i>=0;};
+  S.prototype.clear=function(){this._=[];this.size=0;};
+  S.prototype.forEach=function(f,t){this._.slice().forEach(function(v){f.call(t,v,v);});};
+  S.prototype.size=0;
+  window.Set=S;
+}
+
+if(typeof window.Promise==='undefined'||!window.Promise.resolve){
+  var PR=function(fn){var s=0,v,q=[],self=this;
+    function run(){if(!s)return;setTimeout(function(){q.splice(0).forEach(function(h){var cb=s===1?h.f:h.r;
+      if(typeof cb!=='function'){(s===1?h.res:h.rej)(v);return;}try{h.res(cb(v));}catch(e){h.rej(e);}});},0);}
+    function settle(st,x){if(s)return;s=st;v=x;run();}
+    function resolve(x){if(s)return;if(x&&typeof x.then==='function'){try{x.then(resolve,reject);}catch(e){reject(e);}return;}settle(1,x);}
+    function reject(e){settle(2,e);}
+    self.then=function(f,r){return new PR(function(res,rej){q.push({f:f,r:r,res:res,rej:rej});run();});};
+    self['catch']=function(r){return self.then(null,r);};
+    try{fn(resolve,reject);}catch(e){reject(e);}
+  };
+  PR.resolve=function(x){return x instanceof PR?x:new PR(function(r){r(x);});};
+  PR.reject=function(e){return new PR(function(_,j){j(e);});};
+  PR.all=function(a){return new PR(function(res,rej){var out=[],n=a.length,c=0;if(!n)res(out);a.forEach(function(p,i){PR.resolve(p).then(function(x){out[i]=x;if(++c===n)res(out);},rej);});});};
+  window.Promise=PR;
+}
+
+// ---- CSS variables + flex-gap + grid fallback for old WebView ----
+var native=false;
+try{native=!window.__FORCE_OLD&&!!(window.CSS&&CSS.supports&&CSS.supports('color','var(--a)'));}catch(e){}
+if(native)return;
+var ov={},blocks={},src='',st=null,gaps=[];
+var MO=window.MutationObserver||window.WebKitMutationObserver;
+function subst(s){
+  var m={},k,r=blocks[':root']||{};
+  for(k in r)m[k]=r[k];
+  for(k in ov)m[k]=ov[k];
+  var cl=document.body?document.body.className:'';
+  ['dark','colorblind'].forEach(function(c){ if((' '+cl+' ').indexOf(' '+c+' ')>-1){var b=blocks['body.'+c]||{};for(k in b)m[k]=b[k];} });
+  var prev;
+  do{prev=s;s=s.replace(/var\(\s*(--[\w-]+)\s*(?:,\s*([^()]*))?\)/g,function(_,n,f){return m[n]!==undefined?m[n]:(f||'');});}while(s!==prev&&s.indexOf('var(')>-1);
+  return s;
+}
+function inlineFix(root){
+  var l=(root||document).querySelectorAll('[style*="var("],[data-ostyle]'),i,el,o,s;
+  for(i=0;i<l.length;i++){el=l[i];o=el.getAttribute('data-ostyle');s=o||el.getAttribute('style');
+    if(s&&s.indexOf('var(')>-1){if(!o)el.setAttribute('data-ostyle',s);el.setAttribute('style',subst(s));}}
+}
+function gapFix(root){
+  root=root||document;
+  function one(el,g){
+    var cs=window.getComputedStyle(el),kids=el.children,i,col=(cs.flexDirection||'').indexOf('column')===0,
+        wrap=(cs.flexWrap||'')==='wrap',rtl=cs.direction==='rtl',side=rtl?'marginRight':'marginLeft';
+    if(cs.display.indexOf('flex')<0)return;
+    for(i=0;i<kids.length;i++){
+      if(wrap){kids[i].style[rtl?'marginLeft':'marginRight']=g+'px';kids[i].style.marginBottom=g+'px';}
+      else if(i>0){kids[i].style[col?'marginTop':side]=g+'px';}
+    }
+  }
+  gaps.forEach(function(x){ try{var l=root.querySelectorAll(x[0]),i;for(i=0;i<l.length;i++)one(l[i],x[1]);}catch(e){} });
+  var il=root.querySelectorAll('[style*="gap:"]'),j,mm;
+  for(j=0;j<il.length;j++){mm=/(?:^|;|\s)gap:\s*(\d+)px/.exec(il[j].getAttribute('style')||'');if(mm)one(il[j],+mm[1]);}
+}
+function applyCSS(){ if(st)st.textContent=subst(src)+fallback; inlineFix(); }
+var fallback=
+'.stats-grid{display:-webkit-flex;display:flex;-webkit-flex-wrap:wrap;flex-wrap:wrap;margin:-6px}'+
+'.stats-grid>*{-webkit-flex:1 1 190px;flex:1 1 190px;min-width:0;margin:6px}'+
+'.charts-row{display:-webkit-flex;display:flex;-webkit-flex-wrap:wrap;flex-wrap:wrap}'+
+'.charts-row>*{-webkit-flex:1 1 380px;flex:1 1 380px;min-width:0;margin:0 8px 8px 8px}'+
+'@media (max-width:980px){.charts-row>*{-webkit-flex-basis:100%;flex-basis:100%}}'+
+'@media (max-width:640px){.stats-grid>*{-webkit-flex-basis:44%;flex-basis:44%}}';
+function init(){
+  st=document.getElementsByTagName('style')[0]; if(!st)return;
+  src=st.textContent;
+  src.replace(/(:root|body\.[a-z]+)\s*\{([^}]*)\}/g,function(_,sel,body){
+    var o=blocks[sel]=blocks[sel]||{};
+    body.replace(/(--[\w-]+)\s*:\s*([^;]+);?/g,function(_,k,v){o[k]=v.replace(/^\s+|\s+$/g,'');return '';});return '';});
+  src.replace(/([^{}]+)\{([^}]*)\}/g,function(_,sel,body){
+    var g=/(?:^|;|\s)gap:\s*(\d+)px/.exec(body);
+    if(g&&body.indexOf('grid')<0&&!/stats-grid|charts-row/.test(sel))gaps.push([sel.replace(/^[\s\S]*\}/,'').replace(/^\s+|\s+$/g,''),+g[1]]);
+    return '';});
+  applyCSS(); gapFix();
+  if(MO){
+    new MO(function(){inlineFix();gapFix();}).observe(document.body,{childList:true,subtree:true});
+    new MO(function(){applyCSS();}).observe(document.body,{attributes:true,attributeFilter:['class']});
+  }
+}
+var sp=CSSStyleDeclaration.prototype.setProperty,rp=CSSStyleDeclaration.prototype.removeProperty;
+CSSStyleDeclaration.prototype.setProperty=function(n,v){if(n.indexOf('--')===0){ov[n]=v;if(st)applyCSS();return;}return sp.apply(this,arguments);};
+CSSStyleDeclaration.prototype.removeProperty=function(n){if(n.indexOf('--')===0){delete ov[n];if(st)applyCSS();return '';}return rp.apply(this,arguments);};
+window.__initOld=init;
+})();
+</script>
+<script>if(window.__initOld){window.__initOld();}</script>
+<script>"use strict";
+/* =====================================================================
+   OptiCare Manager — Browser Edition
+   All data is stored locally in this browser via localStorage.
+   Nothing is sent anywhere online.
+   ===================================================================== */
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+var __generator = (this && this.__generator) || function (thisArg, body) {
+    var _ = { label: 0, sent: function() { if (t[0] & 1) throw t[1]; return t[1]; }, trys: [], ops: [] }, f, y, t, g = Object.create((typeof Iterator === "function" ? Iterator : Object).prototype);
+    return g.next = verb(0), g["throw"] = verb(1), g["return"] = verb(2), typeof Symbol === "function" && (g[Symbol.iterator] = function() { return this; }), g;
+    function verb(n) { return function (v) { return step([n, v]); }; }
+    function step(op) {
+        if (f) throw new TypeError("Generator is already executing.");
+        while (g && (g = 0, op[0] && (_ = 0)), _) try {
+            if (f = 1, y && (t = op[0] & 2 ? y["return"] : op[0] ? y["throw"] || ((t = y["return"]) && t.call(y), 0) : y.next) && !(t = t.call(y, op[1])).done) return t;
+            if (y = 0, t) op = [op[0] & 2, t.value];
+            switch (op[0]) {
+                case 0: case 1: t = op; break;
+                case 4: _.label++; return { value: op[1], done: false };
+                case 5: _.label++; y = op[1]; op = [0]; continue;
+                case 7: op = _.ops.pop(); _.trys.pop(); continue;
+                default:
+                    if (!(t = _.trys, t = t.length > 0 && t[t.length - 1]) && (op[0] === 6 || op[0] === 2)) { _ = 0; continue; }
+                    if (op[0] === 3 && (!t || (op[1] > t[0] && op[1] < t[3]))) { _.label = op[1]; break; }
+                    if (op[0] === 6 && _.label < t[1]) { _.label = t[1]; t = op; break; }
+                    if (t && _.label < t[2]) { _.label = t[2]; _.ops.push(op); break; }
+                    if (t[2]) _.ops.pop();
+                    _.trys.pop(); continue;
+            }
+            op = body.call(thisArg, _);
+        } catch (e) { op = [6, e]; y = 0; } finally { f = t = 0; }
+        if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
+    }
+};
+var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
+    if (pack || arguments.length === 2) for (var i = 0, l = from.length, ar; i < l; i++) {
+        if (ar || !(i in from)) {
+            if (!ar) ar = Array.prototype.slice.call(from, 0, i);
+            ar[i] = from[i];
+        }
+    }
+    return to.concat(ar || Array.prototype.slice.call(from));
+};
+var STORAGE_KEY = "opticare_customers_v1";
+var SETTINGS_KEY = "opticare_settings_v1";
+var DEFAULT_ADMIN_PASSWORD = "176420";
+var DEFAULT_LOGO_SVG = "<svg width=\"32\" height=\"32\" viewBox=\"0 0 200 200\" xmlns=\"http://www.w3.org/2000/svg\">\n  <defs>\n    <linearGradient id=\"defaultLogoLens\" x1=\"35\" y1=\"45\" x2=\"155\" y2=\"155\" gradientUnits=\"userSpaceOnUse\">\n      <stop offset=\"0\" stop-color=\"#0F6E8C\"/><stop offset=\"1\" stop-color=\"#0A2240\"/>\n    </linearGradient>\n    <clipPath id=\"defaultLogoClipB\"><circle cx=\"123\" cy=\"100\" r=\"58\"/></clipPath>\n    <clipPath id=\"defaultLogoClipV\"><circle cx=\"77\" cy=\"100\" r=\"58\"/></clipPath>\n  </defs>\n  <g clip-path=\"url(#defaultLogoClipB)\">\n    <circle cx=\"77\" cy=\"100\" r=\"58\" fill=\"url(#defaultLogoLens)\"/>\n    <g clip-path=\"url(#defaultLogoClipV)\">\n      <ellipse cx=\"88\" cy=\"70\" rx=\"12\" ry=\"19\" fill=\"#FFFFFF\" opacity=\"0.4\" transform=\"rotate(-18 88 70)\"/>\n    </g>\n  </g>\n  <circle cx=\"100\" cy=\"100\" r=\"11\" fill=\"#C79A3E\"/>\n  <circle cx=\"104.5\" cy=\"95.5\" r=\"3.2\" fill=\"#FFFFFF\" opacity=\"0.95\"/>\n</svg>";
+/* --------------------------- Translations ---------------------------
+   Covers navigation, page headers, and common actions across the app.
+   Deeper form field labels stay in English for now. */
+var TRANSLATIONS = {
+    en: {
+        nav_dashboard: "Dashboard", nav_customers: "Customers", nav_newCustomer: "New Customer",
+        nav_workshop: "Workshop", nav_todo: "To-Do List", nav_settings: "Settings", nav_admin: "Admin", nav_adminStats: "Statistics", nav_adminSettings: "Admin Settings",
+        search_placeholder: "Search customer by name, phone, or ID (e.g. OPT-0001) — press Enter",
+        footer_stored: "Data stored locally in this browser, on this computer only.",
+        footer_madeby: "Made by Developer Zohaib Hassan",
+        dashboard_title: "Dashboard", dashboard_subtitle: "Overview of shop activity this month",
+        stat_newCustomers: "New Customers", stat_repeatCustomers: "Repeat Customers",
+        stat_ordersMade: "Orders Made", stat_totalCustomers: "Total Customers",
+        stat_sub_registeredMonth: "Registered this month", stat_sub_returnedMonth: "Returned this month",
+        stat_sub_madeMonth: "Made this month", stat_sub_allTime: "All time",
+        dailyOverview_sub: "New vs repeat customers, day by day, for the ongoing month",
+        todaysActivity_title: "Today's Customer ID Activity",
+        todaysActivity_sub: "Everyone who registered today, or came in for a glasses or lens order today — in sequence",
+        customers_title: "Customers", customers_subtitle: "Search and manage customer records",
+        newCustomer_title: "New Customer", newCustomer_subtitle: "Create a new customer ID with their first eyesight reading",
+        workshop_title: "Workshop", workshop_subtitle: "Track eyeglasses from preparation through to pickup",
+        beingPrepared_title: "Being Prepared", beingPrepared_sub: "Orders still in progress, sorted by due date",
+        readyForPickup_title: "Ready for Pickup", readyForPickup_sub: "Glasses are ready — click Delivered once the customer collects them",
+        todo_title: "To-Do List", todo_subtitle: "Remember tasks and set reminders — works while this software is open",
+        pendingTasks_title: "Pending Tasks", completedTasks_title: "Completed",
+        settings_title: "Settings", settings_subtitle: "Customize this software for your shop",
+        btn_save: "Save", btn_cancel: "Cancel", btn_delete: "Delete", btn_edit: "Edit",
+        btn_refresh: "Refresh", btn_addTask: "Add Task", btn_newCustomer: "New Customer", btn_done: "Done",
+    },
+    ur: {
+        nav_dashboard: "ڈیش بورڈ", nav_customers: "کسٹمرز", nav_newCustomer: "نیا کسٹمر",
+        nav_workshop: "ورکشاپ", nav_todo: "ٹو ڈو لسٹ", nav_settings: "ترتیبات", nav_admin: "ایڈمن", nav_adminStats: "اعداد و شمار", nav_adminSettings: "ایڈمن ترتیبات",
+        search_placeholder: "نام، فون یا آئی ڈی سے کسٹمر تلاش کریں (مثلاً OPT-0001) — Enter دبائیں",
+        footer_stored: "یہ ڈیٹا صرف اس براؤزر اور اس کمپیوٹر میں محفوظ ہے۔",
+        footer_madeby: "ڈویلپر ذوہیب حسن کی جانب سے تیار کردہ",
+        dashboard_title: "ڈیش بورڈ", dashboard_subtitle: "اس مہینے دکان کی سرگرمی کا خلاصہ",
+        stat_newCustomers: "نئے کسٹمرز", stat_repeatCustomers: "دوبارہ آنے والے کسٹمرز",
+        stat_ordersMade: "مکمل آرڈرز", stat_totalCustomers: "کل کسٹمرز",
+        stat_sub_registeredMonth: "اس مہینے رجسٹرڈ ہوئے", stat_sub_returnedMonth: "اس مہینے دوبارہ آئے",
+        stat_sub_madeMonth: "اس مہینے بنائے گئے", stat_sub_allTime: "ہمیشہ سے اب تک",
+        dailyOverview_sub: "رواں مہینے کے دوران نئے اور دوبارہ آنے والے کسٹمرز، روز بروز",
+        todaysActivity_title: "آج کی کسٹمر آئی ڈی سرگرمی",
+        todaysActivity_sub: "ہر وہ شخص جس نے آج رجسٹریشن کی، یا آج چشمے یا لینز کا آرڈر دیا — ترتیب وار",
+        customers_title: "کسٹمرز", customers_subtitle: "کسٹمر ریکارڈ تلاش کریں اور ان کا انتظام کریں",
+        newCustomer_title: "نیا کسٹمر", newCustomer_subtitle: "پہلی آنکھوں کی جانچ کے ساتھ نئی کسٹمر آئی ڈی بنائیں",
+        workshop_title: "ورکشاپ", workshop_subtitle: "چشمہ سازی کو تیاری سے لے کر حوالگی تک ٹریک کریں",
+        beingPrepared_title: "تیاری جاری ہے", beingPrepared_sub: "زیر تکمیل آرڈرز، مقررہ تاریخ کے مطابق ترتیب دیے گئے",
+        readyForPickup_title: "وصولی کے لیے تیار", readyForPickup_sub: "چشمہ تیار ہے — کسٹمر کے وصول کرنے پر Delivered دبائیں",
+        todo_title: "ٹو ڈو لسٹ", todo_subtitle: "کام یاد رکھیں اور یاد دہانی مقرر کریں — یہ سافٹ ویئر کھلا ہونے پر کام کرتا ہے",
+        pendingTasks_title: "زیر التوا کام", completedTasks_title: "مکمل شدہ",
+        settings_title: "ترتیبات", settings_subtitle: "اس سافٹ ویئر کو اپنی دکان کے مطابق ترتیب دیں",
+        btn_save: "محفوظ کریں", btn_cancel: "منسوخ کریں", btn_delete: "حذف کریں", btn_edit: "ترمیم کریں",
+        btn_refresh: "تازہ کریں", btn_addTask: "کام شامل کریں", btn_newCustomer: "نیا کسٹمر", btn_done: "مکمل",
+    },
+    ar: {
+        nav_dashboard: "لوحة التحكم", nav_customers: "العملاء", nav_newCustomer: "عميل جديد",
+        nav_workshop: "الورشة", nav_todo: "قائمة المهام", nav_settings: "الإعدادات", nav_admin: "الإدارة", nav_adminStats: "الإحصائيات", nav_adminSettings: "إعدادات الإدارة",
+        search_placeholder: "ابحث عن عميل بالاسم أو الهاتف أو الرقم التعريفي (مثل OPT-0001) — اضغط Enter",
+        footer_stored: "يتم تخزين البيانات محليًا في هذا المتصفح، على هذا الجهاز فقط.",
+        footer_madeby: "من تطوير Zohaib Hassan",
+        dashboard_title: "لوحة التحكم", dashboard_subtitle: "نظرة عامة على نشاط المحل هذا الشهر",
+        stat_newCustomers: "عملاء جدد", stat_repeatCustomers: "عملاء متكررون",
+        stat_ordersMade: "الطلبات المنجزة", stat_totalCustomers: "إجمالي العملاء",
+        stat_sub_registeredMonth: "تم التسجيل هذا الشهر", stat_sub_returnedMonth: "عادوا هذا الشهر",
+        stat_sub_madeMonth: "تم إنجازها هذا الشهر", stat_sub_allTime: "منذ البداية",
+        dailyOverview_sub: "العملاء الجدد والمتكررون، يومًا بيوم، للشهر الحالي",
+        todaysActivity_title: "نشاط عملاء اليوم",
+        todaysActivity_sub: "كل من سجّل اليوم، أو طلب نظارة أو عدسة اليوم — بالترتيب",
+        customers_title: "العملاء", customers_subtitle: "ابحث عن سجلات العملاء وقم بإدارتها",
+        newCustomer_title: "عميل جديد", newCustomer_subtitle: "أنشئ رقم عميل جديد مع أول فحص للنظر",
+        workshop_title: "الورشة", workshop_subtitle: "تتبع النظارات من التحضير حتى الاستلام",
+        beingPrepared_title: "قيد التحضير", beingPrepared_sub: "الطلبات الجارية، مرتبة حسب تاريخ الاستحقاق",
+        readyForPickup_title: "جاهز للاستلام", readyForPickup_sub: "النظارة جاهزة — اضغط \"تم التسليم\" عند استلام العميل لها",
+        todo_title: "قائمة المهام", todo_subtitle: "تذكّر المهام وحدد تنبيهات — يعمل أثناء فتح هذا البرنامج",
+        pendingTasks_title: "المهام المعلقة", completedTasks_title: "المهام المكتملة",
+        settings_title: "الإعدادات", settings_subtitle: "خصص هذا البرنامج لمحلك",
+        btn_save: "حفظ", btn_cancel: "إلغاء", btn_delete: "حذف", btn_edit: "تعديل",
+        btn_refresh: "تحديث", btn_addTask: "إضافة مهمة", btn_newCustomer: "عميل جديد", btn_done: "تم",
+    },
+    hi: {
+        nav_dashboard: "डैशबोर्ड", nav_customers: "ग्राहक", nav_newCustomer: "नया ग्राहक",
+        nav_workshop: "वर्कशॉप", nav_todo: "टू-डू लिस्ट", nav_settings: "सेटिंग्स", nav_admin: "एडमिन", nav_adminStats: "आंकड़े", nav_adminSettings: "एडमिन सेटिंग्स",
+        search_placeholder: "नाम, फ़ोन या आईडी से ग्राहक खोजें (जैसे OPT-0001) — Enter दबाएं",
+        footer_stored: "डेटा केवल इस ब्राउज़र में, इसी कंप्यूटर पर सुरक्षित है।",
+        footer_madeby: "डेवलपर ज़ुहैब हसन द्वारा निर्मित",
+        dashboard_title: "डैशबोर्ड", dashboard_subtitle: "इस महीने की दुकान की गतिविधि का सारांश",
+        stat_newCustomers: "नए ग्राहक", stat_repeatCustomers: "दोबारा आए ग्राहक",
+        stat_ordersMade: "पूरे किए गए ऑर्डर", stat_totalCustomers: "कुल ग्राहक",
+        stat_sub_registeredMonth: "इस महीने पंजीकृत हुए", stat_sub_returnedMonth: "इस महीने वापस आए",
+        stat_sub_madeMonth: "इस महीने बनाए गए", stat_sub_allTime: "अब तक कुल",
+        dailyOverview_sub: "इस महीने नए और दोबारा आए ग्राहक, दिन के अनुसार",
+        todaysActivity_title: "आज की ग्राहक आईडी गतिविधि",
+        todaysActivity_sub: "हर वह व्यक्ति जिसने आज पंजीकरण किया, या आज चश्मा या लेंस ऑर्डर किया — क्रम में",
+        customers_title: "ग्राहक", customers_subtitle: "ग्राहक रिकॉर्ड खोजें और प्रबंधित करें",
+        newCustomer_title: "नया ग्राहक", newCustomer_subtitle: "पहली आंखों की जांच के साथ नई ग्राहक आईडी बनाएं",
+        workshop_title: "वर्कशॉप", workshop_subtitle: "चश्मे को तैयारी से लेकर डिलीवरी तक ट्रैक करें",
+        beingPrepared_title: "तैयार किया जा रहा है", beingPrepared_sub: "जारी ऑर्डर, नियत तारीख के अनुसार क्रमबद्ध",
+        readyForPickup_title: "पिकअप के लिए तैयार", readyForPickup_sub: "चश्मा तैयार है — ग्राहक के लेने पर 'Delivered' दबाएं",
+        todo_title: "टू-डू लिस्ट", todo_subtitle: "कार्य याद रखें और रिमाइंडर सेट करें — यह सॉफ़्टवेयर खुला रहने पर काम करता है",
+        pendingTasks_title: "लंबित कार्य", completedTasks_title: "पूर्ण कार्य",
+        settings_title: "सेटिंग्स", settings_subtitle: "इस सॉफ़्टवेयर को अपनी दुकान के अनुसार अनुकूलित करें",
+        btn_save: "सेव करें", btn_cancel: "रद्द करें", btn_delete: "हटाएं", btn_edit: "संपादित करें",
+        btn_refresh: "रिफ्रेश करें", btn_addTask: "कार्य जोड़ें", btn_newCustomer: "नया ग्राहक", btn_done: "पूर्ण",
+    },
+};
+function t(key) {
+    var lang = (settings && settings.language) || "en";
+    return (TRANSLATIONS[lang] && TRANSLATIONS[lang][key]) || TRANSLATIONS.en[key] || key;
+}
+var RTL_LANGUAGES = ["ur", "ar"];
+var ICONS = {
+    home: '<path d="M3 11.5l9-8 9 8"/><path d="M5 10v10a1 1 0 001 1h4v-6h4v6h4a1 1 0 001-1V10"/>',
+    users: '<circle cx="9" cy="8" r="3.2"/><path d="M2.5 20c0-3.4 2.9-6 6.5-6s6.5 2.6 6.5 6"/><circle cx="17" cy="9" r="2.4"/><path d="M15.3 14.3c2.4.5 4.2 2.4 4.2 5.7"/>',
+    userPlus: '<circle cx="9" cy="8" r="3.2"/><path d="M2.5 20c0-3.4 2.9-6 6.5-6s6.5 2.6 6.5 6"/><path d="M18.5 8v6M15.5 11h6"/>',
+    settings: '<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 00.3 1.9l.1.1a2 2 0 11-2.8 2.8l-.1-.1a1.7 1.7 0 00-1.9-.3 1.7 1.7 0 00-1 1.6V21a2 2 0 11-4 0v-.1a1.7 1.7 0 00-1-1.6 1.7 1.7 0 00-1.9.3l-.1.1a2 2 0 11-2.8-2.8l.1-.1a1.7 1.7 0 00.3-1.9 1.7 1.7 0 00-1.6-1H3a2 2 0 110-4h.1a1.7 1.7 0 001.6-1 1.7 1.7 0 00-.3-1.9l-.1-.1a2 2 0 112.8-2.8l.1.1a1.7 1.7 0 001.9.3H9a1.7 1.7 0 001-1.6V3a2 2 0 114 0v.1a1.7 1.7 0 001 1.6 1.7 1.7 0 001.9-.3l.1-.1a2 2 0 112.8 2.8l-.1.1a1.7 1.7 0 00-.3 1.9V9a1.7 1.7 0 001.6 1H21a2 2 0 110 4h-.1a1.7 1.7 0 00-1.6 1z"/>',
+    search: '<circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/>',
+    edit: '<path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 013 3L7 19l-4 1 1-4z"/>',
+    trash: '<path d="M3 6h18"/><path d="M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/>',
+    refresh: '<path d="M23 4v6h-6"/><path d="M1 20v-6h6"/><path d="M3.5 9a9 9 0 0114.8-3.4L23 10"/><path d="M20.5 15a9 9 0 01-14.8 3.4L1 14"/>',
+    arrowRight: '<path d="M5 12h14"/><path d="M12 5l7 7-7 7"/>',
+    arrowLeft: '<path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/>',
+    plus: '<path d="M12 5v14"/><path d="M5 12h14"/>',
+    sun: '<circle cx="12" cy="12" r="4.5"/><path d="M12 2v2.5M12 19.5V22M4.2 4.2l1.8 1.8M18 18l1.8 1.8M2 12h2.5M19.5 12H22M4.2 19.8L6 18M18 6l1.8-1.8"/>',
+    moon: '<path d="M21 12.8A9 9 0 1111.2 3 7 7 0 0021 12.8z"/>',
+    eye: '<path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"/><circle cx="12" cy="12" r="3"/>',
+    palette: '<path d="M12 2a10 10 0 100 20c1.4 0 2-1 2-2 0-.6-.3-1-.6-1.4-.3-.3-.4-.7-.4-1.1 0-.8.7-1.5 1.5-1.5H16a4 4 0 004-4c0-5-3.6-10-8-10z"/><circle cx="7.5" cy="11.5" r="1.2" fill="currentColor" stroke="none"/><circle cx="10" cy="7" r="1.2" fill="currentColor" stroke="none"/><circle cx="15" cy="7.5" r="1.2" fill="currentColor" stroke="none"/>',
+    chart: '<path d="M3 3v18h18"/><rect x="7" y="12" width="3" height="6"/><rect x="12" y="8" width="3" height="10"/><rect x="17" y="5" width="3" height="13"/>',
+    lock: '<rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 018 0v4"/>',
+    printer: '<path d="M6 9V3h12v6"/><rect x="6" y="13" width="12" height="8"/><path d="M6 13H4a2 2 0 01-2-2V9a2 2 0 012-2h16a2 2 0 012 2v2a2 2 0 01-2 2h-2"/>',
+    upload: '<path d="M12 16V4M6 10l6-6 6 6"/><path d="M4 20h16"/>',
+    download: '<path d="M12 4v12M6 10l6 6 6-6"/><path d="M4 20h16"/>',
+    wrench: '<path d="M14.7 6.3a4 4 0 00-5.4 5.4L3 18l3 3 6.3-6.3a4 4 0 005.4-5.4l-2.7 2.7-2-2z"/>',
+    check: '<path d="M20 6L9 17l-5-5"/>',
+    checklist: '<rect x="3" y="4" width="18" height="16" rx="2"/><path d="M7 9h.01M7 13h.01M7 17h.01M11 9h6M11 13h6M11 17h6"/>',
+    calendarClock: '<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M8 3v4M16 3v4M3 10h18"/><circle cx="16" cy="16" r="3.2"/><path d="M16 14.7v1.5l1 .8"/>',
+};
+function icon(name, size) {
+    if (size === void 0) { size = 17; }
+    return "<svg width=\"".concat(size, "\" height=\"").concat(size, "\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\">").concat(ICONS[name] || "", "</svg>");
+}
+/* --------------------------- Settings --------------------------- */
+function defaultSettings() {
+    return { shopName: "OptiCare", theme: "light", currency: "Rs.", logoDataUrl: null, shopPhone: "", shopEmail: "",
+        language: "en", receiptPaperSize: "A4",
+        adminPassword: DEFAULT_ADMIN_PASSWORD, adminPasswordIsDefault: true, lastBackupDate: null, backupSnoozedUntil: null,
+        customColors: { primary: "#0F6E8C", secondary: "#0A2240", accent: "#C79A3E" } };
+}
+function loadSettings() {
+    try {
+        var raw = localStorage.getItem(SETTINGS_KEY);
+        return raw ? Object.assign(defaultSettings(), JSON.parse(raw)) : defaultSettings();
+    }
+    catch (e) {
+        return defaultSettings();
+    }
+}
+function saveSettings(s) {
+    try {
+        localStorage.setItem(SETTINGS_KEY, JSON.stringify(s));
+    }
+    catch (e) {
+        showAlert("Could not save settings — your device's storage may be full or unavailable.");
+    }
+}
+var settings = loadSettings();
+var statsAuthed = false;
+var settingsAuthed = false;
+var adminLoginTarget = "stats";
+var BACKUP_REMINDER_INTERVAL_DAYS = 7;
+var adminFilter = "today";
+var pendingLogoDataUrl = settings.logoDataUrl;
+var pendingTheme = settings.theme;
+var pendingLanguage = settings.language || "en";
+var pendingPaperSize = settings.receiptPaperSize || "A4";
+function applySettings() {
+    document.body.classList.remove("dark", "colorblind", "custom");
+    if (settings.theme === "custom") {
+        document.body.classList.add("custom");
+        applyCustomColors();
+    }
+    else {
+        clearCustomColorOverrides();
+        if (["dark", "colorblind"].includes(settings.theme)) {
+            document.body.classList.add(settings.theme);
+        }
+    }
+    document.getElementById("shopNameDisplay").innerText = settings.shopName || "OptiCare";
+    document.title = (settings.shopName || "OptiCare") + " Manager (Old Tab Version)";
+    renderSidebarLogo();
+    var isRtl = RTL_LANGUAGES.includes(settings.language);
+    document.documentElement.setAttribute("dir", isRtl ? "rtl" : "ltr");
+    document.documentElement.setAttribute("lang", settings.language || "en");
+    document.body.classList.toggle("rtl", isRtl);
+    renderNavLabels();
+    var searchEl = document.getElementById("globalSearch");
+    if (searchEl)
+        searchEl.placeholder = t("search_placeholder");
+    var footerEl = document.getElementById("sidebarFooterText");
+    if (footerEl) {
+        footerEl.innerHTML = "".concat(esc(t("footer_stored")), "<br><br><b>").concat(esc(t("footer_madeby")), "</b><br>Email: developerzohaibhassan@gmail.com");
+    }
+}
+var CUSTOM_COLOR_VARS = ["--primary", "--primary-hover", "--sidebar", "--sidebar-hover", "--sidebar-active", "--sidebar-accent", "--accent", "--accent-hover"];
+function applyCustomColors() {
+    var cc = settings.customColors || defaultSettings().customColors;
+    var root = document.documentElement.style;
+    root.setProperty("--primary", cc.primary);
+    root.setProperty("--primary-hover", shadeColor(cc.primary, -15));
+    root.setProperty("--sidebar", cc.secondary);
+    root.setProperty("--sidebar-hover", shadeColor(cc.secondary, 15));
+    root.setProperty("--sidebar-active", shadeColor(cc.secondary, 28));
+    root.setProperty("--sidebar-accent", cc.accent);
+    root.setProperty("--accent", cc.accent);
+    root.setProperty("--accent-hover", shadeColor(cc.accent, -15));
+}
+function clearCustomColorOverrides() {
+    var root = document.documentElement.style;
+    CUSTOM_COLOR_VARS.forEach(function (v) { return root.removeProperty(v); });
+}
+function shadeColor(hex, percent) {
+    hex = (hex || "#000000").replace("#", "");
+    if (hex.length === 3)
+        hex = hex.split("").map(function (c) { return c + c; }).join("");
+    if (!/^[0-9a-fA-F]{6}$/.test(hex))
+        hex = "000000";
+    var r = parseInt(hex.substring(0, 2), 16);
+    var g = parseInt(hex.substring(2, 4), 16);
+    var b = parseInt(hex.substring(4, 6), 16);
+    r = Math.min(255, Math.max(0, Math.round(r + (percent / 100) * 255)));
+    g = Math.min(255, Math.max(0, Math.round(g + (percent / 100) * 255)));
+    b = Math.min(255, Math.max(0, Math.round(b + (percent / 100) * 255)));
+    return "#" + [r, g, b].map(function (v) { return v.toString(16).padStart(2, "0"); }).join("");
+}
+function renderSidebarLogo() {
+    var el = document.getElementById("sidebarLogoSlot");
+    el.innerHTML = settings.logoDataUrl
+        ? "<img src=\"".concat(settings.logoDataUrl, "\" alt=\"Shop logo\">")
+        : DEFAULT_LOGO_SVG;
+}
+function fmtMoney(n) {
+    var val = Number(n || 0);
+    return "".concat(settings.currency || "Rs.", " ").concat(val.toLocaleString(undefined, { maximumFractionDigits: 0 }));
+}
+/* --------------------------- Data layer --------------------------- */
+function loadCustomers() {
+    try {
+        var raw = localStorage.getItem(STORAGE_KEY);
+        return raw ? JSON.parse(raw) : [];
+    }
+    catch (e) {
+        return [];
+    }
+}
+function saveCustomers(list) {
+    try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(list));
+    }
+    catch (e) {
+        showAlert("Could not save — your device's storage may be full or unavailable. Your last change may not have been saved.");
+    }
+}
+function todayStr(d) { var dt = d ? new Date(d) : new Date(); return dt.toISOString().slice(0, 10); }
+function formatCustomerCode(n) {
+    var digits = Math.max(4, String(n).length);
+    return "OPT-" + String(n).padStart(digits, "0");
+}
+function nextCode(list) {
+    var maxNum = 0;
+    (list || []).forEach(function (c) {
+        var m = /^OPT-(\d+)$/.exec(c.code || "");
+        if (m) {
+            var n_1 = parseInt(m[1], 10);
+            if (n_1 > maxNum)
+                maxNum = n_1;
+        }
+    });
+    var existing = new Set((list || []).map(function (c) { return c.code; }));
+    var n = maxNum + 1;
+    var code = formatCustomerCode(n);
+    while (existing.has(code)) {
+        n++;
+        code = formatCustomerCode(n);
+    }
+    return code;
+}
+function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 8); }
+function ratingLabel(r) { return { 1: "Low spender", 2: "Below average", 3: "Average", 4: "High spender", 5: "Premium spender" }[r] || "Average"; }
+function starsHtml(rating, max) {
+    if (max === void 0) { max = 5; }
+    var html = '<span class="stars">';
+    for (var i = 1; i <= max; i++) {
+        html += i <= rating ? "&#9733;" : '<span class="off">&#9733;</span>';
+    }
+    html += '</span>';
+    return html;
+}
+function esc(s) {
+    var d = document.createElement("div");
+    d.innerText = (s === undefined || s === null) ? "" : s;
+    return d.innerHTML;
+}
+/* --------------------------- Sound feedback ---------------------------
+   Short tones generated with the Web Audio API — no external sound
+   files needed, so this works fully offline.
+
+   IMPORTANT: browsers suspend a freshly-created AudioContext unless it
+   follows a direct user gesture (click/tap/key). Task reminders fire
+   from a background timer, not a click, so a new context created at
+   that moment would often be silently blocked. The fix: keep ONE
+   shared AudioContext for the whole session, and "unlock" it the
+   moment the user interacts with the page at all (any click/key/tap).
+   Once unlocked it stays usable for later sounds triggered by timers. */
+var sharedAudioCtx = null;
+function getAudioContext() {
+    if (!sharedAudioCtx) {
+        try {
+            sharedAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        }
+        catch (e) {
+            return null;
+        }
+    }
+    if (sharedAudioCtx.state === "suspended") {
+        sharedAudioCtx.resume().catch(function () { });
+    }
+    return sharedAudioCtx;
+}
+["click", "keydown", "touchstart"].forEach(function (evt) {
+    document.addEventListener(evt, function () { return getAudioContext(); }, { passive: true });
+});
+function playTone(frequencies, noteDurationMs) {
+    if (noteDurationMs === void 0) { noteDurationMs = 140; }
+    var ctx = getAudioContext();
+    if (!ctx) {
+        playToneWav(frequencies, noteDurationMs);
+        return;
+    }
+    try {
+        var time_1 = ctx.currentTime;
+        frequencies.forEach(function (freq) {
+            var osc = ctx.createOscillator();
+            var gain = ctx.createGain();
+            osc.type = "sine";
+            osc.frequency.value = freq;
+            gain.gain.setValueAtTime(0.0001, time_1);
+            gain.gain.exponentialRampToValueAtTime(0.22, time_1 + 0.015);
+            gain.gain.exponentialRampToValueAtTime(0.0001, time_1 + noteDurationMs / 1000);
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            osc.start(time_1);
+            osc.stop(time_1 + noteDurationMs / 1000 + 0.03);
+            time_1 += (noteDurationMs / 1000) * 0.8;
+        });
+    }
+    catch (e) { /* ignore — e.g. browser still blocking audio */ }
+}
+function playCustomerCreatedSound() { playTone([880, 1175], 150); }
+function playBillPrintedSound() { playTone([660, 990], 130); }
+/* A louder, harsher, 5-second alarm — alternating siren tones on a
+   square wave — used specifically for task reminders so it's hard to miss. */
+function playAlarmBuzzer() {
+    var ctx = getAudioContext();
+    if (!ctx)
+        return;
+    try {
+        var totalDuration = 5;
+        var beepDuration = 0.28;
+        var gapDuration = 0.12;
+        var cycle = beepDuration + gapDuration;
+        var beepCount = Math.round(totalDuration / cycle);
+        var time = ctx.currentTime;
+        for (var i = 0; i < beepCount; i++) {
+            var osc = ctx.createOscillator();
+            var gain = ctx.createGain();
+            osc.type = "square";
+            osc.frequency.value = (i % 2 === 0) ? 950 : 700;
+            gain.gain.setValueAtTime(0.0001, time);
+            gain.gain.exponentialRampToValueAtTime(0.16, time + 0.02);
+            gain.gain.exponentialRampToValueAtTime(0.0001, time + beepDuration);
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            osc.start(time);
+            osc.stop(time + beepDuration + 0.02);
+            time += cycle;
+        }
+    }
+    catch (e) { /* ignore — e.g. browser still blocking audio */ }
+}
+var customers = loadCustomers();
+var currentView = "dashboard";
+var currentCustomerId = null;
+var listQuery = "";
+var totalManuallyEdited = false;
+var lastCreatedOrderId = null;
+var pageEl = document.getElementById("page");
+var modalOverlay = document.getElementById("modalOverlay");
+var modalBody = document.getElementById("modalBody");
+function setPage(html) {
+    setTimeout(function () { updateWorkshopNavBadge(); updateTodoNavBadge(); }, 0);
+    pageEl.innerHTML = html;
+    pageEl.classList.remove("fade");
+    void pageEl.offsetWidth;
+    pageEl.classList.add("fade");
+}
+function openModal(title, bodyHtml, footerHtml) {
+    modalBody.innerHTML = "<div class=\"modal-header\"><h2>".concat(title, "</h2></div>\n    <div class=\"modal-scroll\">").concat(bodyHtml, "</div><div class=\"modal-actions\">").concat(footerHtml, "</div>");
+    modalOverlay.classList.add("open");
+}
+function closeModal() { modalOverlay.classList.remove("open"); modalBody.innerHTML = ""; }
+modalOverlay.addEventListener("click", function (e) { if (e.target === modalOverlay)
+    closeModal(); });
+document.addEventListener("keydown", function (e) { if (e.key === "Escape") {
+    closeModal();
+    closeMobileSidebar();
+} });
+function toggleMobileSidebar() {
+    document.getElementById("sidebar").classList.toggle("open");
+    document.getElementById("sidebarBackdrop").classList.toggle("open");
+}
+function closeMobileSidebar() {
+    document.getElementById("sidebar").classList.remove("open");
+    document.getElementById("sidebarBackdrop").classList.remove("open");
+}
+function setActiveNav(key) { document.querySelectorAll(".nav-btn").forEach(function (b) { return b.classList.toggle("active", b.dataset.nav === key); }); }
+function renderNavLabels() {
+    document.querySelector('[data-nav="dashboard"]').innerHTML = icon("home") + " " + esc(t("nav_dashboard"));
+    document.querySelector('[data-nav="customers"]').innerHTML = icon("users") + " " + esc(t("nav_customers"));
+    document.querySelector('[data-nav="form"]').innerHTML = icon("userPlus") + " " + esc(t("nav_newCustomer"));
+    document.querySelector('[data-nav="workshop"]').innerHTML = icon("wrench") + " " + esc(t("nav_workshop")) + " <span id=\"workshopOverdueBadge\" style=\"display:none; margin-left:auto; background:var(--danger); color:#fff; font-size:10px; font-weight:800; padding:2px 7px; border-radius:10px;\"></span>";
+    document.querySelector('[data-nav="todo"]').innerHTML = icon("checklist") + " " + esc(t("nav_todo")) + " <span id=\"todoOverdueBadge\" style=\"display:none; margin-left:auto; background:var(--danger); color:#fff; font-size:10px; font-weight:800; padding:2px 7px; border-radius:10px;\"></span>";
+    document.querySelector('[data-nav="settings"]').innerHTML = icon("settings") + " " + esc(t("nav_settings"));
+    document.querySelector('[data-nav="adminstats"]').innerHTML = icon("chart") + " " + esc(t("nav_adminStats"));
+    document.querySelector('[data-nav="adminsettings"]').innerHTML = icon("lock") + " " + esc(t("nav_adminSettings"));
+}
+renderNavLabels();
+document.querySelectorAll(".nav-btn").forEach(function (btn) {
+    btn.addEventListener("click", function () {
+        var nav = btn.dataset.nav;
+        if (nav === "dashboard")
+            showDashboard();
+        else if (nav === "customers")
+            showCustomerList();
+        else if (nav === "form")
+            showCustomerForm(null);
+        else if (nav === "workshop")
+            showWorkshop();
+        else if (nav === "todo")
+            showTodoList();
+        else if (nav === "settings")
+            showSettings();
+        else if (nav === "adminstats")
+            showAdminStats();
+        else if (nav === "adminsettings")
+            showAdminSettings();
+        closeMobileSidebar();
+    });
+});
+document.getElementById("globalSearch").addEventListener("keydown", function (e) {
+    if (e.key !== "Enter")
+        return;
+    var q = e.target.value.trim();
+    if (!q)
+        return;
+    var exact = customers.find(function (c) { return c.code.toLowerCase() === q.toLowerCase(); });
+    if (exact)
+        showCustomerDetail(exact.id);
+    else
+        showCustomerList(q);
+    e.target.value = "";
+});
+/* =====================================================================
+   CHART HELPERS
+   ===================================================================== */
+function lastNMonths(n) {
+    var out = [];
+    var now = new Date();
+    for (var i = n - 1; i >= 0; i--) {
+        var d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+        out.push({ key: d.toISOString().slice(0, 7), label: d.toLocaleString(undefined, { month: "short" }) });
+    }
+    return out;
+}
+function groupedBarChart(groups, seriesColors, height, perGroupWidth) {
+    if (height === void 0) { height = 170; }
+    if (perGroupWidth === void 0) { perGroupWidth = 78; }
+    var width = Math.max(460, groups.length * perGroupWidth);
+    var seriesCount = groups[0] ? groups[0].values.length : 1;
+    var maxVal = Math.max.apply(Math, __spreadArray([1], groups.flatMap(function (g) { return g.values; }), false));
+    var groupWidth = width / groups.length;
+    var barGap = 5, sidePad = Math.min(12, groupWidth / 4);
+    var barWidth = (groupWidth - sidePad * 2 - barGap * (seriesCount - 1)) / seriesCount;
+    var chartHeight = height - 34;
+    var bars = "";
+    groups.forEach(function (g, gi) {
+        var groupX = gi * groupWidth + sidePad;
+        g.values.forEach(function (v, si) {
+            var barH = maxVal > 0 ? (v / maxVal) * (chartHeight - 18) : 0;
+            var x = groupX + si * (barWidth + barGap);
+            var y = chartHeight - barH;
+            bars += "<rect x=\"".concat(x.toFixed(1), "\" y=\"").concat(y.toFixed(1), "\" width=\"").concat(barWidth.toFixed(1), "\" height=\"").concat(barH.toFixed(1), "\" rx=\"3\" fill=\"").concat(seriesColors[si], "\"></rect>");
+            if (v > 0)
+                bars += "<text x=\"".concat((x + barWidth / 2).toFixed(1), "\" y=\"").concat((y - 5).toFixed(1), "\" font-size=\"10.5\" fill=\"var(--text-muted)\" text-anchor=\"middle\" font-family=\"Segoe UI, Arial\">").concat(v, "</text>");
+        });
+        bars += "<text x=\"".concat((groupX + (groupWidth - sidePad * 2) / 2).toFixed(1), "\" y=\"").concat(chartHeight + 18, "\" font-size=\"11\" fill=\"var(--text-muted)\" text-anchor=\"middle\" font-family=\"Segoe UI, Arial\">").concat(g.label, "</text>");
+    });
+    bars += "<line x1=\"0\" y1=\"".concat(chartHeight, "\" x2=\"").concat(width, "\" y2=\"").concat(chartHeight, "\" stroke=\"var(--border)\" stroke-width=\"1\"/>");
+    return "<svg viewBox=\"0 0 ".concat(width, " ").concat(height, "\" style=\"width:").concat(width, "px; height:").concat(height, "px; display:block;\">").concat(bars, "</svg>");
+}
+/* Build one bar-chart group per calendar day between start and end (inclusive).
+   metricFn(dateStr) must return an array of values (one per series) for that day. */
+function computeDailySeries(startStr, endStr, metricFn) {
+    var start = new Date(startStr + "T00:00:00");
+    var end = new Date(endStr + "T00:00:00");
+    var days = [];
+    for (var d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
+        days.push(todayStr(d));
+    }
+    return days.map(function (dateStr) { return ({ label: String(parseInt(dateStr.slice(8, 10), 10)), values: metricFn(dateStr) }); });
+}
+/* =====================================================================
+   DASHBOARD  (no revenue here — see Admin Statistics)
+   ===================================================================== */
+function computeStats() {
+    var monthPrefix = todayStr().slice(0, 7);
+    var newThisMonth = customers.filter(function (c) { return c.registrationDate.startsWith(monthPrefix); }).length;
+    var totalCustomers = customers.length;
+    var ordersThisMonth = 0;
+    var repeatSet = new Set();
+    customers.forEach(function (c) {
+        (c.orders || []).forEach(function (o) {
+            if (o.date.startsWith(monthPrefix)) {
+                ordersThisMonth++;
+                if (!c.registrationDate.startsWith(monthPrefix))
+                    repeatSet.add(c.id);
+            }
+        });
+    });
+    return { newThisMonth: newThisMonth, repeatThisMonth: repeatSet.size, ordersThisMonth: ordersThisMonth, totalCustomers: totalCustomers };
+}
+function computeOngoingMonthDailySeries() {
+    var today = todayStr();
+    var monthStart = today.slice(0, 7) + "-01";
+    return computeDailySeries(monthStart, today, function (dateStr) {
+        var newCount = customers.filter(function (c) { return c.registrationDate === dateStr; }).length;
+        var repeatSet = new Set();
+        customers.forEach(function (c) {
+            if (c.registrationDate === dateStr)
+                return;
+            (c.orders || []).forEach(function (o) { if (o.date === dateStr)
+                repeatSet.add(c.id); });
+        });
+        return [newCount, repeatSet.size];
+    });
+}
+function computeTodaysActivity() {
+    var today = todayStr();
+    var entries = [];
+    customers.forEach(function (c) {
+        var isNew = c.registrationDate === today;
+        var ordersToday = (c.orders || []).filter(function (o) { return o.date === today; });
+        if (!isNew && ordersToday.length === 0)
+            return;
+        var hasGlasses = ordersToday.some(function (o) { return o.type !== "lens"; });
+        var hasLens = ordersToday.some(function (o) { return o.type === "lens"; });
+        var tags = [];
+        if (isNew)
+            tags.push("New Registration");
+        if (hasGlasses)
+            tags.push("Glasses Order");
+        if (hasLens)
+            tags.push("Lens Order");
+        // Use the most recent id among today's events (registration or any
+        // order placed today) so the list reflects true chronological order,
+        // not just when the customer was originally registered.
+        var latestKey = isNew ? c.id : "";
+        ordersToday.forEach(function (o) { if (o.id > latestKey)
+            latestKey = o.id; });
+        entries.push({ customer: c, activity: tags.join(" + ") || "-", latestKey: latestKey });
+    });
+    entries.sort(function (a, b) { return b.latestKey.localeCompare(a.latestKey); });
+    return entries;
+}
+function showDashboard() {
+    currentView = "dashboard";
+    setActiveNav("dashboard");
+    var s = computeStats();
+    var dailySeries = computeOngoingMonthDailySeries();
+    var monthLabel = new Date().toLocaleString(undefined, { month: "long", year: "numeric" });
+    var rows = "";
+    var todaysActivity = computeTodaysActivity();
+    if (todaysActivity.length === 0) {
+        rows = "<tr><td colspan=\"6\" class=\"empty-msg\">No registrations or orders yet today.</td></tr>";
+    }
+    else {
+        rows = todaysActivity.map(function (entry, idx) {
+            var c = entry.customer;
+            return "\n      <tr class=\"clickable\" onclick=\"showCustomerDetail('".concat(c.id, "')\">\n        <td>").concat(idx + 1, "</td><td>").concat(esc(c.code), "</td><td>").concat(esc(c.name), "</td><td>").concat(esc(c.phone || "-"), "</td>\n        <td>").concat(esc(entry.activity), "</td><td>").concat(starsHtml(c.rating), "</td>\n      </tr>");
+        }).join("");
+    }
+    setPage("\n    <div class=\"header-row\">\n      <div><h1 class=\"title\">".concat(esc(t("dashboard_title")), "</h1><p class=\"subtitle\">").concat(esc(t("dashboard_subtitle")), "</p></div>\n      <button class=\"btn btn-primary\" onclick=\"showDashboard()\">").concat(icon("refresh", 15), " ").concat(esc(t("btn_refresh")), "</button>\n    </div>\n\n    ").concat(shouldShowBackupReminder() ? "\n    <div class=\"card\" style=\"border:1.5px solid var(--accent); display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px;\">\n      <div style=\"display:flex; align-items:center; gap:10px;\">\n        ".concat(icon("download", 18), "\n        <div style=\"font-size:12.5px; font-weight:600;\">").concat(settings.lastBackupDate ? "It's been over ".concat(BACKUP_REMINDER_INTERVAL_DAYS, " days since your last backup (").concat(esc(formatDateDMY(settings.lastBackupDate)), "). Export a copy of your data to be safe.") : "You haven't exported a backup yet. Export a copy of your data to be safe.", "</div>\n      </div>\n      <div style=\"display:flex; gap:8px; flex-shrink:0;\">\n        <button class=\"btn btn-primary btn-small\" onclick=\"exportAllData()\">").concat(icon("download", 13), " Export Now</button>\n        <button class=\"btn btn-outline btn-small\" onclick=\"snoozeBackupReminder()\">Remind Me Later</button>\n      </div>\n    </div>") : "", "\n\n    <div class=\"stats-grid\">\n      <div class=\"stat-card\"><div class=\"stat-bar\" style=\"background:var(--primary)\"></div>\n        <div class=\"stat-body\"><div class=\"stat-title\">").concat(esc(t("stat_newCustomers")).toUpperCase(), "</div>\n        <div class=\"stat-value\">").concat(s.newThisMonth, "</div><div class=\"stat-sub\">").concat(esc(t("stat_sub_registeredMonth")), "</div></div></div>\n\n      <div class=\"stat-card\"><div class=\"stat-bar\" style=\"background:var(--accent)\"></div>\n        <div class=\"stat-body\"><div class=\"stat-title\">").concat(esc(t("stat_repeatCustomers")).toUpperCase(), "</div>\n        <div class=\"stat-value\">").concat(s.repeatThisMonth, "</div><div class=\"stat-sub\">").concat(esc(t("stat_sub_returnedMonth")), "</div></div></div>\n\n      <div class=\"stat-card\"><div class=\"stat-bar\" style=\"background:var(--success)\"></div>\n        <div class=\"stat-body\"><div class=\"stat-title\">").concat(esc(t("stat_ordersMade")).toUpperCase(), "</div>\n        <div class=\"stat-value\">").concat(s.ordersThisMonth, "</div><div class=\"stat-sub\">").concat(esc(t("stat_sub_madeMonth")), "</div></div></div>\n\n      <div class=\"stat-card\"><div class=\"stat-bar\" style=\"background:var(--text-muted)\"></div>\n        <div class=\"stat-body\"><div class=\"stat-title\">").concat(esc(t("stat_totalCustomers")).toUpperCase(), "</div>\n        <div class=\"stat-value\">").concat(s.totalCustomers, "</div><div class=\"stat-sub\">").concat(esc(t("stat_sub_allTime")), "</div></div></div>\n    </div>\n\n    <div class=\"card\">\n      <div class=\"chart-card-title\">Daily Overview \u2014 ").concat(esc(monthLabel), "</div>\n      <div class=\"chart-card-sub\">").concat(esc(t("dailyOverview_sub")), "</div>\n      <div class=\"chart-scroll\">").concat(groupedBarChart(dailySeries, ["var(--primary)", "var(--accent)"], 170, 40), "</div>\n      <div class=\"legend\">\n        <div class=\"legend-item\"><span class=\"legend-dot\" style=\"background:var(--primary)\"></span> New</div>\n        <div class=\"legend-item\"><span class=\"legend-dot\" style=\"background:var(--accent)\"></span> Repeat</div>\n      </div>\n    </div>\n\n    <div class=\"section-title\">").concat(esc(t("todaysActivity_title")), "</div>\n    <p class=\"subtitle\" style=\"margin:-6px 0 10px 0;\">").concat(esc(t("todaysActivity_sub")), "</p>\n    <div class=\"card\" style=\"padding:0;\">\n      <div class=\"table-scroll\"><table>\n        <thead><tr><th>#</th><th>ID</th><th>Name</th><th>Phone</th><th>Activity Today</th><th>Rating</th></tr></thead>\n        <tbody>").concat(rows, "</tbody>\n      </table></div>\n    </div>\n\n    <p style=\"font-size:11.5px; color:var(--text-muted); text-align:center; margin-top:24px;\">\n      ").concat(esc(t("footer_stored")), "<br>\n      ").concat(esc(t("footer_madeby")), " &nbsp;\u2022&nbsp; Email: developerzohaibhassan@gmail.com\n    </p>\n  "));
+}
+/* =====================================================================
+   CUSTOMER LIST / SEARCH
+   ===================================================================== */
+function showCustomerList(query) {
+    if (query === void 0) { query = ""; }
+    currentView = "customers";
+    setActiveNav("customers");
+    listQuery = query;
+    renderCustomerListPage();
+}
+function renderCustomerListPage() {
+    var q = listQuery.trim().toLowerCase();
+    var filtered = !q ? customers : customers.filter(function (c) {
+        return c.name.toLowerCase().includes(q) || (c.phone || "").toLowerCase().includes(q) || c.code.toLowerCase().includes(q);
+    });
+    var sorted = __spreadArray([], filtered, true).sort(function (a, b) { return b.id.localeCompare(a.id); });
+    var rows = "";
+    if (sorted.length === 0) {
+        rows = "<tr><td colspan=\"6\" class=\"empty-msg\">No matching customers found.</td></tr>";
+    }
+    else {
+        rows = sorted.map(function (c) { return "\n      <tr>\n        <td class=\"clickable\" onclick=\"showCustomerDetail('".concat(c.id, "')\">").concat(esc(c.code), "</td>\n        <td class=\"clickable\" onclick=\"showCustomerDetail('").concat(c.id, "')\">").concat(esc(c.name), "</td>\n        <td class=\"clickable\" onclick=\"showCustomerDetail('").concat(c.id, "')\">").concat(esc(c.phone || "-"), "</td>\n        <td class=\"clickable\" onclick=\"showCustomerDetail('").concat(c.id, "')\">").concat(esc(c.registrationDate), "</td>\n        <td class=\"clickable\" onclick=\"showCustomerDetail('").concat(c.id, "')\">").concat(starsHtml(c.rating), "</td>\n        <td><button class=\"btn btn-primary btn-small\" onclick=\"showCustomerDetail('").concat(c.id, "')\">View ").concat(icon("arrowRight", 12), "</button></td>\n      </tr>"); }).join("");
+    }
+    setPage("\n    <div class=\"header-row\">\n      <div><h1 class=\"title\">".concat(esc(t("customers_title")), "</h1><p class=\"subtitle\">").concat(esc(t("customers_subtitle")), "</p></div>\n      <button class=\"btn btn-primary\" onclick=\"showCustomerForm(null)\">").concat(icon("plus", 15), " ").concat(esc(t("btn_newCustomer")), "</button>\n    </div>\n    <input type=\"text\" id=\"listSearch\" placeholder=\"Search by name, phone, or Customer ID (e.g. OPT-0001)\" style=\"margin-bottom:14px;\" value=\"").concat(esc(listQuery), "\">\n    <div class=\"card\" style=\"padding:0;\">\n      <div class=\"table-scroll\"><table>\n        <thead><tr><th>ID</th><th>Name</th><th>Phone</th><th>Registered</th><th>Rating</th><th></th></tr></thead>\n        <tbody>").concat(rows, "</tbody>\n      </table></div>\n    </div>\n  "));
+    var el = document.getElementById("listSearch");
+    el.addEventListener("input", function (e) {
+        listQuery = e.target.value;
+        renderCustomerListPage();
+        var el2 = document.getElementById("listSearch");
+        el2.focus();
+        el2.selectionStart = el2.selectionEnd = el2.value.length;
+    });
+}
+/* =====================================================================
+   WORKSHOP  (pending glasses orders being prepared, tracked by due date)
+   ===================================================================== */
+function computeWorkshopPending() {
+    var items = [];
+    customers.forEach(function (c) {
+        (c.orders || []).forEach(function (o) {
+            if (o.type === "glasses" && o.workshopStatus === "pending") {
+                items.push({ customer: c, order: o });
+            }
+        });
+    });
+    items.sort(function (a, b) { return (a.order.workshopDueDate || "9999-99-99").localeCompare(b.order.workshopDueDate || "9999-99-99"); });
+    return items;
+}
+function computeWorkshopReadyForPickup() {
+    var items = [];
+    customers.forEach(function (c) {
+        (c.orders || []).forEach(function (o) {
+            if (o.type === "glasses" && o.workshopStatus === "done" && !o.isDelivered) {
+                items.push({ customer: c, order: o });
+            }
+        });
+    });
+    items.sort(function (a, b) { return (a.order.workshopDueDate || "9999-99-99").localeCompare(b.order.workshopDueDate || "9999-99-99"); });
+    return items;
+}
+function showWorkshop() {
+    currentView = "workshop";
+    setActiveNav("workshop");
+    renderWorkshopPage();
+}
+function renderWorkshopPage() {
+    var pendingItems = computeWorkshopPending();
+    var readyItems = computeWorkshopReadyForPickup();
+    var today = todayStr();
+    var pendingHtml = "";
+    if (pendingItems.length === 0) {
+        pendingHtml = "<div class=\"card\"><p class=\"empty-msg\">No pending workshop orders. Add an order to the workshop from a customer's \"New Glasses Order\" form.</p></div>";
+    }
+    else {
+        pendingHtml = pendingItems.map(function (_a) {
+            var c = _a.customer, o = _a.order;
+            var overdue = o.workshopDueDate && o.workshopDueDate <= today;
+            return "\n        <div class=\"card\" style=\"".concat(overdue ? "border:2px solid var(--danger); box-shadow:none;" : "", " display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:14px;\">\n          <div style=\"flex:1; min-width:220px;\">\n            <div style=\"font-weight:700; font-size:14px; cursor:pointer;\" onclick=\"showCustomerDetail('").concat(c.id, "')\">\n              ").concat(esc(c.name), " <span style=\"color:var(--text-muted); font-weight:600;\">(").concat(esc(c.code), ")</span>\n            </div>\n            <div style=\"font-size:12.5px; color:var(--text-muted); margin-top:3px;\">\n              ").concat(esc(o.frame || "Frame not specified")).concat(o.lensType ? " • " + esc(o.lensType) : "", "\n            </div>\n            <div style=\"font-size:12.5px; margin-top:6px; ").concat(overdue ? "color:var(--danger); font-weight:700;" : "color:var(--text-main);", "\">\n              ").concat(overdue ? "⚠ Overdue — " : "", "Due: ").concat(esc(formatDateDMY(o.workshopDueDate)), "\n            </div>\n          </div>\n          <button class=\"btn btn-primary btn-small\" onclick=\"markWorkshopDone('").concat(c.id, "','").concat(o.id, "')\">").concat(icon("plus", 13), " Glasses Are Ready</button>\n        </div>\n      ");
+        }).join("");
+    }
+    var readyHtml = "";
+    if (readyItems.length === 0) {
+        readyHtml = "<div class=\"card\"><p class=\"empty-msg\">No glasses waiting for pickup right now.</p></div>";
+    }
+    else {
+        readyHtml = readyItems.map(function (_a) {
+            var c = _a.customer, o = _a.order;
+            return "\n        <div class=\"card\" style=\"border-left:4px solid var(--success); display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:14px;\">\n          <div style=\"flex:1; min-width:220px;\">\n            <div style=\"font-weight:700; font-size:14px; cursor:pointer;\" onclick=\"showCustomerDetail('".concat(c.id, "')\">\n              ").concat(esc(c.name), " <span style=\"color:var(--text-muted); font-weight:600;\">(").concat(esc(c.code), ")</span>\n            </div>\n            <div style=\"font-size:12.5px; color:var(--text-muted); margin-top:3px;\">\n              ").concat(esc(o.frame || "Frame not specified")).concat(o.lensType ? " • " + esc(o.lensType) : "", "\n            </div>\n            <div style=\"font-size:12.5px; margin-top:6px; color:var(--success); font-weight:700;\">\n              \u2713 Ready since ").concat(esc(formatDateDMY(o.workshopDueDate)), "\n            </div>\n          </div>\n          <button class=\"btn btn-accent btn-small\" onclick=\"markOrderDelivered('").concat(c.id, "','").concat(o.id, "')\">").concat(icon("check", 13), " Delivered</button>\n        </div>\n      ");
+        }).join("");
+    }
+    setPage("\n    <div class=\"header-row\">\n      <div><h1 class=\"title\">".concat(esc(t("workshop_title")), "</h1><p class=\"subtitle\">").concat(esc(t("workshop_subtitle")), "</p></div>\n      <button class=\"btn btn-primary\" onclick=\"showWorkshop()\">").concat(icon("refresh", 15), " ").concat(esc(t("btn_refresh")), "</button>\n    </div>\n\n    <div class=\"section-title\" style=\"margin-top:0;\">").concat(esc(t("beingPrepared_title")), "</div>\n    <p class=\"subtitle\" style=\"margin:-6px 0 10px 0;\">").concat(esc(t("beingPrepared_sub")), "</p>\n    ").concat(pendingHtml, "\n\n    <div class=\"section-title\">").concat(esc(t("readyForPickup_title")), "</div>\n    <p class=\"subtitle\" style=\"margin:-6px 0 10px 0;\">").concat(esc(t("readyForPickup_sub")), "</p>\n    ").concat(readyHtml, "\n  "));
+}
+function markWorkshopDone(customerId, orderId) {
+    var c = customers.find(function (x) { return x.id === customerId; });
+    if (!c)
+        return;
+    var o = (c.orders || []).find(function (x) { return x.id === orderId; });
+    if (!o)
+        return;
+    o.workshopStatus = "done";
+    saveCustomers(customers);
+    renderWorkshopPage();
+}
+function markOrderDelivered(customerId, orderId) {
+    return __awaiter(this, void 0, void 0, function () {
+        var c, o;
+        return __generator(this, function (_a) {
+            switch (_a.label) {
+                case 0:
+                    c = customers.find(function (x) { return x.id === customerId; });
+                    if (!c)
+                        return [2 /*return*/];
+                    o = (c.orders || []).find(function (x) { return x.id === orderId; });
+                    if (!o)
+                        return [2 /*return*/];
+                    if (o.workshopStatus === "pending") {
+                        showAlert("This order is still pending in the Workshop. Please mark it as \"Glasses Are Ready\" first.");
+                        return [2 /*return*/];
+                    }
+                    return [4 /*yield*/, showConfirm];
+                case 1:
+                    if (!(_a.sent())("Mark this order as delivered to ".concat(c.name, "?")))
+                        return [2 /*return*/];
+                    o.isDelivered = true;
+                    o.deliveredDate = todayStr();
+                    saveCustomers(customers);
+                    if (currentView === "workshop")
+                        renderWorkshopPage();
+                    else
+                        renderCustomerDetailPage();
+                    return [2 /*return*/];
+            }
+        });
+    });
+}
+/* =====================================================================
+   TO-DO LIST  (shop tasks with an optional date/time reminder)
+   ===================================================================== */
+var TASKS_KEY = "opticare_tasks_v1";
+function loadTasks() {
+    try {
+        var raw = localStorage.getItem(TASKS_KEY);
+        return raw ? JSON.parse(raw) : [];
+    }
+    catch (e) {
+        return [];
+    }
+}
+function saveTasks(list) {
+    try {
+        localStorage.setItem(TASKS_KEY, JSON.stringify(list));
+    }
+    catch (e) {
+        showAlert("Could not save the task list — your device's storage may be full or unavailable.");
+    }
+}
+var tasks = loadTasks();
+function nowMinuteStr() {
+    var d = new Date();
+    d.setSeconds(0, 0);
+    return d.toISOString().slice(0, 16);
+}
+function formatReminderDisplay(reminderAt) {
+    if (!reminderAt)
+        return "No reminder set";
+    var d = new Date(reminderAt);
+    if (isNaN(d.getTime()))
+        return "No reminder set";
+    return d.toLocaleString(undefined, { day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" });
+}
+function showTodoList() {
+    currentView = "todo";
+    setActiveNav("todo");
+    checkTaskReminders();
+    renderTodoPage();
+}
+function renderTodoPage() {
+    var now = nowMinuteStr();
+    var pending = tasks.filter(function (t) { return !t.completed; }).sort(function (a, b) {
+        var ad = a.reminderAt || "9999-99-99T99:99";
+        var bd = b.reminderAt || "9999-99-99T99:99";
+        return ad.localeCompare(bd);
+    });
+    var completed = tasks.filter(function (t) { return t.completed; }).sort(function (a, b) { return (b.completedAt || "").localeCompare(a.completedAt || ""); });
+    function taskCard(t, isDone) {
+        var overdue = !isDone && t.reminderAt && t.reminderAt <= now;
+        return "\n      <div class=\"card\" style=\"".concat(overdue ? "border:2px solid var(--danger); box-shadow:none;" : "", " ").concat(isDone ? "opacity:0.65;" : "", " display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:14px;\">\n        <div style=\"flex:1; min-width:220px;\">\n          <div style=\"font-weight:700; font-size:14px; ").concat(isDone ? "text-decoration:line-through; color:var(--text-muted);" : "", "\">").concat(esc(t.title), "</div>\n          ").concat(t.details ? "<div style=\"font-size:12.5px; color:var(--text-muted); margin-top:4px; white-space:pre-wrap;\">".concat(esc(t.details), "</div>") : "", "\n          <div style=\"font-size:12.5px; margin-top:6px; ").concat(overdue ? "color:var(--danger); font-weight:700;" : "color:var(--text-muted);", "\">\n            ").concat(overdue ? "⏰ Reminder due — " : (t.reminderAt ? "🔔 " : "")).concat(esc(formatReminderDisplay(t.reminderAt)), "\n          </div>\n        </div>\n        ").concat(!isDone ? "\n          <div style=\"display:flex; gap:8px;\">\n            <button class=\"btn btn-primary btn-small\" onclick=\"markTaskDone('".concat(t.id, "')\">").concat(icon("check", 13), " Done</button>\n            <button class=\"btn btn-outline btn-small\" style=\"color:var(--danger);\" onclick=\"deleteTask('").concat(t.id, "')\">").concat(icon("trash", 13), "</button>\n          </div>\n        ") : "\n          <button class=\"btn btn-outline btn-small\" style=\"color:var(--danger);\" onclick=\"deleteTask('".concat(t.id, "')\">").concat(icon("trash", 13), "</button>\n        "), "\n      </div>\n    ");
+    }
+    var pendingHtml = pending.length === 0
+        ? "<div class=\"card\"><p class=\"empty-msg\">No tasks yet. Click \"+ Add Task\" to remember something for later.</p></div>"
+        : pending.map(function (t) { return taskCard(t, false); }).join("");
+    var completedHtml = completed.length === 0
+        ? "<div class=\"card\"><p class=\"empty-msg\">Nothing completed yet.</p></div>"
+        : completed.map(function (t) { return taskCard(t, true); }).join("");
+    setPage("\n    <div class=\"header-row\">\n      <div><h1 class=\"title\">".concat(esc(t("todo_title")), "</h1><p class=\"subtitle\">").concat(esc(t("todo_subtitle")), "</p></div>\n      <button class=\"btn btn-primary\" onclick=\"openAddTaskModal()\">").concat(icon("plus", 15), " ").concat(esc(t("btn_addTask")), "</button>\n    </div>\n\n    <div class=\"section-title\" style=\"margin-top:0;\">").concat(esc(t("pendingTasks_title")), "</div>\n    ").concat(pendingHtml, "\n\n    <div class=\"section-title\">").concat(esc(t("completedTasks_title")), "</div>\n    ").concat(completedHtml, "\n  "));
+}
+var pendingTaskReminder = null;
+function openAddTaskModal() {
+    pendingTaskReminder = null;
+    var body = "\n    <label class=\"field-label\">Task Title *</label>\n    <input type=\"text\" id=\"task_title\" placeholder=\"e.g. Order more lens cleaning cloths\" style=\"margin-bottom:12px;\">\n    <label class=\"field-label\">Details</label>\n    <textarea id=\"task_details\" rows=\"3\" placeholder=\"optional \u2014 any extra notes\" style=\"margin-bottom:14px;\"></textarea>\n\n    <label class=\"field-label\">Reminder Date &amp; Time (optional)</label>\n    <div class=\"form-row\" style=\"margin-bottom:8px;\">\n      <div class=\"form-col\"><input type=\"date\" id=\"task_reminder_date\"></div>\n      <div class=\"form-col\"><input type=\"time\" id=\"task_reminder_time\"></div>\n    </div>\n    <button type=\"button\" class=\"btn btn-outline btn-small\" onclick=\"setTaskReminder()\">".concat(icon("check", 13), " Set Reminder</button>\n    <div id=\"task_reminder_confirm\" style=\"margin-top:10px; font-size:12.5px; color:var(--text-muted);\">No reminder set</div>\n\n    <p style=\"font-size:11.5px; color:var(--text-muted); margin-top:14px;\">\n      If set, this software will sound a reminder and show a notification at that time \u2014 as long as it's open in your browser.\n    </p>\n  ");
+    var footer = "\n    <button class=\"btn btn-primary\" onclick=\"saveNewTask()\">Save Task</button>\n    <button class=\"btn btn-outline\" onclick=\"closeModal()\">Cancel</button>\n  ";
+    openModal("Add Task", body, footer);
+}
+function setTaskReminder() {
+    var dateVal = document.getElementById("task_reminder_date").value;
+    var timeVal = document.getElementById("task_reminder_time").value;
+    if (!dateVal || !timeVal) {
+        showAlert("Please choose both a date and a time, then click \"Set Reminder\".");
+        return;
+    }
+    pendingTaskReminder = "".concat(dateVal, "T").concat(timeVal);
+    renderTaskReminderConfirm();
+}
+function clearTaskReminder() {
+    pendingTaskReminder = null;
+    var dEl = document.getElementById("task_reminder_date");
+    var tEl = document.getElementById("task_reminder_time");
+    if (dEl)
+        dEl.value = "";
+    if (tEl)
+        tEl.value = "";
+    renderTaskReminderConfirm();
+}
+function renderTaskReminderConfirm() {
+    var el = document.getElementById("task_reminder_confirm");
+    if (!el)
+        return;
+    el.innerHTML = pendingTaskReminder
+        ? "<span style=\"color:var(--success); font-weight:700;\">".concat(icon("check", 12), " Reminder set for ").concat(esc(formatReminderDisplay(pendingTaskReminder)), "</span>\n       <button type=\"button\" class=\"btn btn-outline btn-small\" style=\"margin-left:8px;\" onclick=\"clearTaskReminder()\">Clear</button>")
+        : "No reminder set";
+}
+function saveNewTask() {
+    var title = document.getElementById("task_title").value.trim();
+    if (!title) {
+        showAlert("Please enter a task title.");
+        return;
+    }
+    var details = document.getElementById("task_details").value.trim();
+    var reminderAt = pendingTaskReminder;
+    tasks.push({
+        id: uid(),
+        title: title,
+        details: details,
+        reminderAt: reminderAt,
+        completed: false, reminderFired: false,
+        createdAt: new Date().toISOString(), completedAt: null,
+    });
+    saveTasks(tasks);
+    if (reminderAt)
+        requestNotificationPermissionIfNeeded();
+    closeModal();
+    renderTodoPage();
+}
+function markTaskDone(taskId) {
+    var t = tasks.find(function (x) { return x.id === taskId; });
+    if (!t)
+        return;
+    t.completed = true;
+    t.completedAt = new Date().toISOString();
+    saveTasks(tasks);
+    renderTodoPage();
+}
+function deleteTask(taskId) {
+    return __awaiter(this, void 0, void 0, function () {
+        return __generator(this, function (_a) {
+            switch (_a.label) {
+                case 0: return [4 /*yield*/, showConfirm];
+                case 1:
+                    if (!(_a.sent())("Delete this task permanently?"))
+                        return [2 /*return*/];
+                    tasks = tasks.filter(function (x) { return x.id !== taskId; });
+                    saveTasks(tasks);
+                    renderTodoPage();
+                    return [2 /*return*/];
+            }
+        });
+    });
+}
+function requestNotificationPermissionIfNeeded() {
+    if (window.Notification && Notification.permission === "default") {
+        Notification.requestPermission();
+    }
+}
+function triggerTaskReminder(t) {
+    playAlarmBuzzer();
+    if (window.Notification && Notification.permission === "granted") {
+        try {
+            new Notification("Task Reminder: " + t.title, { body: t.details || "It's time for this task." });
+        }
+        catch (e) { }
+    }
+}
+function checkTaskReminders() {
+    var now = nowMinuteStr();
+    var changed = false;
+    tasks.forEach(function (t) {
+        if (!t.completed && t.reminderAt && !t.reminderFired && t.reminderAt <= now) {
+            t.reminderFired = true;
+            changed = true;
+            triggerTaskReminder(t);
+        }
+    });
+    if (changed)
+        saveTasks(tasks);
+    return changed;
+}
+setInterval(function () {
+    var changed = checkTaskReminders();
+    if (changed && currentView === "todo")
+        renderTodoPage();
+}, 10000);
+/* =====================================================================
+   ADD / EDIT CUSTOMER FORM
+   ===================================================================== */
+function showCustomerForm(customerId) {
+    currentView = "form";
+    setActiveNav(customerId ? "customers" : "form");
+    var isEdit = !!customerId;
+    var cust = isEdit ? customers.find(function (c) { return c.id === customerId; }) : null;
+    setPage("\n    <div class=\"header-row\">\n      <div><h1 class=\"title\">".concat(isEdit ? "Edit Customer" : esc(t("newCustomer_title")), "</h1>\n      <p class=\"subtitle\">").concat(isEdit ? "Update customer details" : esc(t("newCustomer_subtitle")), "</p></div>\n    </div>\n    <div class=\"card\">\n      <div class=\"section-title\" style=\"margin-top:0;\">Basic Information</div>\n      <div class=\"form-row\">\n        <div class=\"form-col\"><label class=\"field-label\">Full Name *</label>\n          <input type=\"text\" id=\"f_name\" placeholder=\"e.g. Ahmed Khan\" value=\"").concat(isEdit ? esc(cust.name) : "", "\"></div>\n        <div class=\"form-col\"><label class=\"field-label\">Phone Number *</label>\n          <input type=\"tel\" id=\"f_phone\" placeholder=\"e.g. 0300-1234567\" value=\"").concat(isEdit ? esc(cust.phone) : "", "\"></div>\n      </div>\n      <div class=\"form-row\">\n        <div class=\"form-col\"><label class=\"field-label\">Address</label>\n          <input type=\"text\" id=\"f_address\" placeholder=\"e.g. Model Town, Lahore\" value=\"").concat(isEdit ? esc(cust.address) : "", "\"></div>\n      </div>\n      <label class=\"field-label\">Customer Rating (spending level)</label>\n      <div id=\"f_rating\" style=\"margin-bottom:14px;\"></div>\n      <label class=\"field-label\">Notes (personality, glass quality preference, etc.)</label>\n      <textarea id=\"f_notes\" rows=\"3\">").concat(isEdit ? esc(cust.notes) : "", "</textarea>\n    </div>\n    ").concat(!isEdit ? "\n    <div class=\"card\">\n      <div class=\"section-title\" style=\"margin-top:0;\">First Eyesight Reading (optional, can add later)</div>\n      ".concat(eyeRowHtml("re", "Right Eye")).concat(eyeRowHtml("le", "Left Eye"), "\n      <label class=\"field-label\" style=\"margin-top:8px;\">Remarks</label>\n      <input type=\"text\" id=\"f_remarks\">\n    </div>") : "", "\n    <div style=\"display:flex; gap:10px;\">\n      <button class=\"btn btn-primary\" style=\"padding:12px 22px;\" onclick=\"saveCustomerForm(").concat(isEdit ? "'".concat(customerId, "'") : "null", ")\">").concat(isEdit ? "Save Changes" : "Create Customer", "</button>\n      <button class=\"btn btn-outline\" style=\"padding:12px 22px;\" onclick=\"").concat(isEdit ? "showCustomerDetail('".concat(customerId, "')") : "showDashboard()", "\">Cancel</button>\n    </div>\n  "));
+    renderStarPicker("f_rating", isEdit ? cust.rating : 3);
+}
+function eyeRowHtml(prefix, label) {
+    return "<div class=\"eye-row\"><div class=\"eye-label\">".concat(label, "</div>\n    <div class=\"eye-field\"><label>SPH</label><input type=\"text\" id=\"").concat(prefix, "_sph\"></div>\n    <div class=\"eye-field\"><label>CYL</label><input type=\"text\" id=\"").concat(prefix, "_cyl\"></div>\n    <div class=\"eye-field\"><label>AXIS</label><input type=\"text\" id=\"").concat(prefix, "_axis\"></div>\n    <div class=\"eye-field\"><label>ADD</label><input type=\"text\" id=\"").concat(prefix, "_add\"></div></div>");
+}
+function readEyeRow(prefix) {
+    return { sph: document.getElementById(prefix + "_sph").value.trim(), cyl: document.getElementById(prefix + "_cyl").value.trim(),
+        axis: document.getElementById(prefix + "_axis").value.trim(), add: document.getElementById(prefix + "_add").value.trim() };
+}
+var starPickerValue = {};
+function renderStarPicker(containerId, value) {
+    starPickerValue[containerId] = value;
+    var el = document.getElementById(containerId);
+    el.innerHTML = [1, 2, 3, 4, 5].map(function (i) { return "<span data-i=\"".concat(i, "\" style=\"cursor:pointer; font-size:22px; color:").concat(i <= value ? "var(--accent)" : "var(--border)", "; margin-right:2px;\">&#9733;</span>"); }).join("");
+    el.querySelectorAll("span").forEach(function (span) { return span.addEventListener("click", function () { return renderStarPicker(containerId, parseInt(span.dataset.i)); }); });
+}
+function saveCustomerForm(customerId) {
+    var name = document.getElementById("f_name").value.trim();
+    var phone = document.getElementById("f_phone").value.trim();
+    var address = document.getElementById("f_address").value.trim();
+    var notes = document.getElementById("f_notes").value.trim();
+    var rating = starPickerValue["f_rating"] || 3;
+    if (!name) {
+        showAlert("Customer name is required.");
+        return;
+    }
+    if (!phone) {
+        showAlert("Phone number is required.");
+        return;
+    }
+    if (customerId) {
+        var c = customers.find(function (x) { return x.id === customerId; });
+        c.name = name;
+        c.phone = phone;
+        c.address = address;
+        c.notes = notes;
+        c.rating = rating;
+        saveCustomers(customers);
+        showCustomerDetail(customerId);
+    }
+    else {
+        var re = readEyeRow("re");
+        var le = readEyeRow("le");
+        var remarks = document.getElementById("f_remarks").value.trim();
+        var hasReading = Object.values(re).some(function (v) { return v; }) || Object.values(le).some(function (v) { return v; });
+        var newCust = { id: uid(), code: nextCode(customers), name: name, phone: phone, address: address, rating: rating, notes: notes, registrationDate: todayStr(), prescriptions: hasReading ? [{ id: uid(), date: todayStr(), re: re, le: le, remarks: remarks }] : [], orders: [] };
+        customers.push(newCust);
+        saveCustomers(customers);
+        playCustomerCreatedSound();
+        showAlert("Customer ID ".concat(newCust.code, " created successfully."));
+        showCustomerDetail(newCust.id);
+    }
+}
+/* =====================================================================
+   CUSTOMER DETAIL
+   ===================================================================== */
+function showCustomerDetail(customerId) { currentView = "detail"; currentCustomerId = customerId; setActiveNav("customers"); renderCustomerDetailPage(); }
+function renderCustomerDetailPage() {
+    var c = customers.find(function (x) { return x.id === currentCustomerId; });
+    if (!c) {
+        setPage("<p class=\"empty-msg\">Customer not found.</p>");
+        return;
+    }
+    var prescriptions = __spreadArray([], (c.prescriptions || []), true).sort(function (a, b) { return b.date.localeCompare(a.date) || b.id.localeCompare(a.id); });
+    var glassesOrders = __spreadArray([], (c.orders || []), true).filter(function (o) { return o.type !== "lens"; }).sort(function (a, b) { return b.date.localeCompare(a.date) || b.id.localeCompare(a.id); });
+    var lensOrders = __spreadArray([], (c.orders || []), true).filter(function (o) { return o.type === "lens"; }).sort(function (a, b) { return b.date.localeCompare(a.date) || b.id.localeCompare(a.id); });
+    var eyeRows = "";
+    if (prescriptions.length === 0) {
+        eyeRows = "<tr><td colspan=\"5\" class=\"empty-msg\">No eyesight readings recorded yet.</td></tr>";
+    }
+    else {
+        eyeRows = prescriptions.map(function (p, idx) {
+            var isCurrent = idx === 0;
+            var reStr = "".concat(p.re.sph || "-", " / ").concat(p.re.cyl || "-", " / ").concat(p.re.axis || "-", " / ").concat(p.re.add || "-");
+            var leStr = "".concat(p.le.sph || "-", " / ").concat(p.le.cyl || "-", " / ").concat(p.le.axis || "-", " / ").concat(p.le.add || "-");
+            return "<tr>\n        <td style=\"".concat(isCurrent ? "color:var(--success); font-weight:700;" : "", "\">").concat(esc(p.date)).concat(isCurrent ? " (CURRENT)" : "", "</td>\n        <td style=\"").concat(isCurrent ? "font-weight:700;" : "", "\">").concat(esc(reStr), "</td>\n        <td style=\"").concat(isCurrent ? "font-weight:700;" : "", "\">").concat(esc(leStr), "</td>\n        <td>").concat(esc(p.remarks || "-"), "</td>\n        <td><button class=\"btn btn-outline btn-small\" style=\"color:var(--danger);\" onclick=\"deletePrescription('").concat(p.id, "')\">").concat(icon("trash", 12), "</button></td>\n      </tr>");
+        }).join("");
+    }
+    var orderRows = "";
+    if (glassesOrders.length === 0) {
+        orderRows = "<tr><td colspan=\"10\" class=\"empty-msg\">No glasses orders recorded yet.</td></tr>";
+    }
+    else {
+        orderRows = glassesOrders.map(function (o) { return "\n      <tr>\n        <td>".concat(esc(o.date), "</td><td>").concat(esc(o.frame || "-"), "</td><td>").concat(esc(o.lensType || "-"), "</td><td>").concat(esc(o.quality || "-"), "</td>\n        <td>").concat(fmtMoney(o.framePrice), "</td><td>").concat(fmtMoney(o.piecePrice), "</td><td style=\"font-weight:700;\">").concat(fmtMoney(o.price), "</td>\n        <td style=\"").concat(o.isInstallment ? "color:var(--accent); font-weight:600;" : "", "\">").concat(esc(paymentStatusText(o)), "</td>\n        <td style=\"").concat(o.isDelivered ? "color:var(--success); font-weight:700;" : (o.workshopStatus === 'pending' && o.workshopDueDate <= todayStr() ? "color:var(--danger); font-weight:700;" : ""), "\">").concat(esc(workshopStatusText(o)), "</td>\n        <td>\n          <button class=\"btn btn-outline btn-small\" onclick=\"showBillView('").concat(o.id, "')\" title=\"Print Bill\">").concat(icon("printer", 12), "</button>\n          <button class=\"btn btn-outline btn-small\" style=\"color:var(--danger);\" onclick=\"deleteOrder('").concat(o.id, "')\" title=\"Delete\">").concat(icon("trash", 12), "</button>\n        </td>\n      </tr>"); }).join("");
+    }
+    var lensRows = "";
+    if (lensOrders.length === 0) {
+        lensRows = "<tr><td colspan=\"7\" class=\"empty-msg\">No lens orders recorded yet.</td></tr>";
+    }
+    else {
+        lensRows = lensOrders.map(function (o) { return "\n      <tr>\n        <td>".concat(esc(o.date), "</td><td>").concat(esc(o.brand || "-"), "</td>\n        <td>").concat(esc(o.lensCategory === "contact" ? "Contact Lens" : "Fashion Lens"), "</td>\n        <td>").concat(esc(lensOrderDetailText(o)), "</td>\n        <td>").concat(esc(o.quality || "-"), "</td>\n        <td style=\"font-weight:700;\">").concat(fmtMoney(o.price), "</td>\n        <td>\n          <button class=\"btn btn-outline btn-small\" onclick=\"showBillView('").concat(o.id, "')\" title=\"Print Bill\">").concat(icon("printer", 12), "</button>\n          <button class=\"btn btn-outline btn-small\" style=\"color:var(--danger);\" onclick=\"deleteOrder('").concat(o.id, "')\" title=\"Delete\">").concat(icon("trash", 12), "</button>\n        </td>\n      </tr>"); }).join("");
+    }
+    setPage("\n    <div class=\"header-row\">\n      <div><h1 class=\"title\">".concat(esc(c.name), "</h1><p class=\"subtitle\">Customer ID: ").concat(esc(c.code), "</p></div>\n      <div style=\"display:flex; gap:8px;\">\n        <button class=\"btn btn-outline\" onclick=\"showCustomerForm('").concat(c.id, "')\">").concat(icon("edit", 14), " Edit</button>\n        <button class=\"btn btn-danger\" onclick=\"deleteCustomer('").concat(c.id, "')\">").concat(icon("trash", 14), " Delete</button>\n      </div>\n    </div>\n\n    <div class=\"card\">\n      <div style=\"display:flex; justify-content:space-between; flex-wrap:wrap; gap:20px;\">\n        <div style=\"flex:1; min-width:240px;\">\n          <p style=\"margin:4px 0;\"><b style=\"color:var(--text-muted); font-size:11.5px;\">PHONE&nbsp;&nbsp;</b> ").concat(esc(c.phone || "-"), "</p>\n          <p style=\"margin:4px 0;\"><b style=\"color:var(--text-muted); font-size:11.5px;\">ADDRESS&nbsp;&nbsp;</b> ").concat(esc(c.address || "-"), "</p>\n          <p style=\"margin:4px 0;\"><b style=\"color:var(--text-muted); font-size:11.5px;\">REGISTERED&nbsp;&nbsp;</b> ").concat(esc(c.registrationDate), "</p>\n        </div>\n        <div style=\"text-align:right;\">\n          <div style=\"font-size:11.5px; font-weight:700; color:var(--text-muted);\">CUSTOMER RATING</div>\n          <div style=\"margin:4px 0;\">").concat(starsHtml(c.rating), "</div>\n          <div style=\"font-size:12px; color:var(--accent);\">").concat(ratingLabel(c.rating), "</div>\n        </div>\n      </div>\n      ").concat(c.notes ? "<div class=\"notes-box\"><b style=\"font-size:11.5px; color:var(--text-muted);\">NOTES (PERSONALITY / GLASS PREFERENCE)</b><p style=\"margin:6px 0 0 0;\">".concat(esc(c.notes), "</p></div>") : "", "\n    </div>\n\n    <div class=\"section-title\">Eyesight Number History\n      <button class=\"btn btn-primary btn-small\" onclick=\"openAddPrescription()\">").concat(icon("plus", 13), " Add Reading</button>\n    </div>\n    <div class=\"card\" style=\"padding:0;\">\n      <div class=\"table-scroll\"><table>\n        <thead><tr><th>Date</th><th>R.E. (SPH/CYL/AXIS/ADD)</th><th>L.E. (SPH/CYL/AXIS/ADD)</th><th>Remarks</th><th></th></tr></thead>\n        <tbody>").concat(eyeRows, "</tbody>\n      </table></div>\n    </div>\n\n    <div class=\"section-title\">Eyeglasses Making History\n      <button class=\"btn btn-accent btn-small\" onclick=\"openAddGlassesOrder()\">").concat(icon("plus", 13), " Add Order</button>\n    </div>\n    <div class=\"card\" style=\"padding:0;\">\n      <div class=\"table-scroll\"><table>\n        <thead><tr><th>Date</th><th>Frame</th><th>Lens Type</th><th>Quality/Brand</th><th>Frame Price</th><th>Piece Price</th><th>Total</th><th>Payment</th><th>Workshop</th><th></th></tr></thead>\n        <tbody>").concat(orderRows, "</tbody>\n      </table></div>\n    </div>\n\n    <div class=\"section-title\">Lens Order History\n      <button class=\"btn btn-accent btn-small\" onclick=\"openAddLensOrder()\">").concat(icon("plus", 13), " Add Lens Order</button>\n    </div>\n    <div class=\"card\" style=\"padding:0;\">\n      <div class=\"table-scroll\"><table>\n        <thead><tr><th>Date</th><th>Brand</th><th>Category</th><th>Details</th><th>Quality</th><th>Price</th><th></th></tr></thead>\n        <tbody>").concat(lensRows, "</tbody>\n      </table></div>\n    </div>\n  "));
+}
+function deleteCustomer(id) {
+    return __awaiter(this, void 0, void 0, function () {
+        return __generator(this, function (_a) {
+            switch (_a.label) {
+                case 0: return [4 /*yield*/, showConfirm];
+                case 1:
+                    if (!(_a.sent())("Delete this customer and ALL their records permanently?"))
+                        return [2 /*return*/];
+                    customers = customers.filter(function (c) { return c.id !== id; });
+                    saveCustomers(customers);
+                    showCustomerList();
+                    return [2 /*return*/];
+            }
+        });
+    });
+}
+function deletePrescription(pid) {
+    return __awaiter(this, void 0, void 0, function () {
+        var c;
+        return __generator(this, function (_a) {
+            switch (_a.label) {
+                case 0: return [4 /*yield*/, showConfirm];
+                case 1:
+                    if (!(_a.sent())("Delete this eyesight reading? This cannot be undone."))
+                        return [2 /*return*/];
+                    c = customers.find(function (x) { return x.id === currentCustomerId; });
+                    c.prescriptions = c.prescriptions.filter(function (p) { return p.id !== pid; });
+                    saveCustomers(customers);
+                    renderCustomerDetailPage();
+                    return [2 /*return*/];
+            }
+        });
+    });
+}
+function deleteOrder(oid) {
+    return __awaiter(this, void 0, void 0, function () {
+        var c;
+        return __generator(this, function (_a) {
+            switch (_a.label) {
+                case 0: return [4 /*yield*/, showConfirm];
+                case 1:
+                    if (!(_a.sent())("Delete this order? This cannot be undone."))
+                        return [2 /*return*/];
+                    c = customers.find(function (x) { return x.id === currentCustomerId; });
+                    c.orders = c.orders.filter(function (o) { return o.id !== oid; });
+                    saveCustomers(customers);
+                    renderCustomerDetailPage();
+                    return [2 /*return*/];
+            }
+        });
+    });
+}
+/* --------------------- Add Reading modal --------------------- */
+function openAddPrescription() {
+    var body = "".concat(eyeRowHtml("m_re", "Right Eye")).concat(eyeRowHtml("m_le", "Left Eye"), "\n    <label class=\"field-label\" style=\"margin-top:8px;\">Remarks</label><input type=\"text\" id=\"m_remarks\">");
+    var footer = "<button class=\"btn btn-primary\" onclick=\"saveAddPrescription()\">Save Reading</button>\n    <button class=\"btn btn-outline\" onclick=\"closeModal()\">Cancel</button>";
+    openModal("New Eyesight Reading", body, footer);
+}
+function saveAddPrescription() {
+    var c = customers.find(function (x) { return x.id === currentCustomerId; });
+    var re = readEyeRow("m_re");
+    var le = readEyeRow("m_le");
+    var remarks = document.getElementById("m_remarks").value.trim();
+    c.prescriptions = c.prescriptions || [];
+    c.prescriptions.push({ id: uid(), date: todayStr(), re: re, le: le, remarks: remarks });
+    saveCustomers(customers);
+    closeModal();
+    renderCustomerDetailPage();
+}
+/* --------------------- New Glasses Order modal (unchanged from original) --------------------- */
+function openAddGlassesOrder() {
+    totalManuallyEdited = false;
+    var body = "\n    <label class=\"field-label\">Frame Details</label>\n    <input type=\"text\" id=\"m_frame\" placeholder=\"e.g. Ray-Ban RB2140, Black\" style=\"margin-bottom:10px;\">\n    <label class=\"field-label\">Lens Type</label>\n    <input type=\"text\" id=\"m_lens\" placeholder=\"e.g. Anti-glare, Progressive\" style=\"margin-bottom:10px;\">\n    <label class=\"field-label\">Glass Quality / Brand</label>\n    <input type=\"text\" id=\"m_quality\" placeholder=\"e.g. Essilor Premium\" style=\"margin-bottom:10px;\">\n    <div class=\"form-row\" style=\"margin-bottom:0;\">\n      <div class=\"form-col\"><label class=\"field-label\">Frame Price (".concat(esc(settings.currency), ")</label>\n        <input type=\"number\" id=\"m_frameprice\" placeholder=\"e.g. 2500\"></div>\n      <div class=\"form-col\"><label class=\"field-label\">Glasses Piece Price (").concat(esc(settings.currency), ")</label>\n        <input type=\"number\" id=\"m_pieceprice\" placeholder=\"e.g. 3000\"></div>\n    </div>\n    <div class=\"price-total-box\">\n      <label class=\"field-label\" style=\"margin-bottom:6px;\">Total Price (").concat(esc(settings.currency), ") \u2014 used in statistics</label>\n      <input type=\"number\" id=\"m_totalprice\" placeholder=\"Auto-calculated, or enter manually\">\n    </div>\n\n    <label style=\"display:flex; align-items:center; gap:9px; margin:14px 0 0 0; cursor:pointer; font-size:13px; font-weight:600; color:var(--text-main);\">\n      <input type=\"checkbox\" id=\"m_isinstallment\" onchange=\"toggleInstallmentFields()\" style=\"width:16px; height:16px; cursor:pointer;\">\n      Customer is paying later (advance + balance)\n    </label>\n    <div id=\"m_installment_fields\" style=\"display:none; margin-top:10px;\" class=\"price-total-box\">\n      <div class=\"form-row\" style=\"margin-bottom:0;\">\n        <div class=\"form-col\"><label class=\"field-label\">Advance Paid (").concat(esc(settings.currency), ")</label>\n          <input type=\"number\" id=\"m_advance\" placeholder=\"e.g. 1000\" oninput=\"updateInstallmentBalance()\"></div>\n        <div class=\"form-col\"><label class=\"field-label\">Balance Due (").concat(esc(settings.currency), ")</label>\n          <input type=\"number\" id=\"m_balance\" readonly style=\"background:var(--bg-main);\"></div>\n      </div>\n    </div>\n\n    <label style=\"display:flex; align-items:center; gap:9px; margin:14px 0 0 0; cursor:pointer; font-size:13px; font-weight:600; color:var(--text-main);\">\n      <input type=\"checkbox\" id=\"m_addworkshop\" onchange=\"toggleWorkshopFields()\" style=\"width:16px; height:16px; cursor:pointer;\">\n      Add to Workshop (track until ready)\n    </label>\n    <div id=\"m_workshop_fields\" style=\"display:none; margin-top:10px;\" class=\"price-total-box\">\n      <label class=\"field-label\">Due Date (when it will be ready)</label>\n      <input type=\"date\" id=\"m_workshopdate\">\n    </div>\n\n    <label class=\"field-label\" style=\"margin-top:14px;\">Notes</label>\n    <input type=\"text\" id=\"m_ordernotes\" placeholder=\"optional\">\n  ");
+    var footer = "\n    <button class=\"btn btn-primary\" onclick=\"saveAddOrder(false)\">Save Order</button>\n    <button class=\"btn btn-accent\" onclick=\"saveAddOrder(true)\">".concat(icon("printer", 13), " Save &amp; Print</button>\n    <button class=\"btn btn-outline\" onclick=\"closeModal()\">Cancel</button>\n  ");
+    openModal("New Glasses Order", body, footer);
+    var fp = document.getElementById("m_frameprice");
+    var pp = document.getElementById("m_pieceprice");
+    var tp = document.getElementById("m_totalprice");
+    function recalc() {
+        if (totalManuallyEdited)
+            return;
+        var sum = (parseFloat(fp.value) || 0) + (parseFloat(pp.value) || 0);
+        tp.value = sum ? sum : "";
+    }
+    fp.addEventListener("input", recalc);
+    pp.addEventListener("input", recalc);
+    tp.addEventListener("input", function () { totalManuallyEdited = true; updateInstallmentBalance(); });
+}
+function toggleInstallmentFields() {
+    var checked = document.getElementById("m_isinstallment").checked;
+    document.getElementById("m_installment_fields").style.display = checked ? "block" : "none";
+    if (checked)
+        updateInstallmentBalance();
+}
+function toggleWorkshopFields() {
+    var checked = document.getElementById("m_addworkshop").checked;
+    document.getElementById("m_workshop_fields").style.display = checked ? "block" : "none";
+}
+function updateInstallmentBalance() {
+    var totalEl = document.getElementById("m_totalprice");
+    var advanceEl = document.getElementById("m_advance");
+    var balanceEl = document.getElementById("m_balance");
+    if (!totalEl || !advanceEl || !balanceEl)
+        return;
+    var total = parseFloat(totalEl.value) || 0;
+    var advance = parseFloat(advanceEl.value) || 0;
+    balanceEl.value = Math.max(0, total - advance);
+}
+function paymentStatusText(o) {
+    if (!o.isInstallment)
+        return "Paid in Full";
+    return "Advance ".concat(fmtMoney(o.advancePaid), " / Balance ").concat(fmtMoney(o.balanceDue));
+}
+function formatDateDMY(dateStr) {
+    if (!dateStr)
+        return "";
+    var parts = dateStr.split("-");
+    if (parts.length !== 3)
+        return dateStr;
+    var y = parts[0], m = parts[1], d = parts[2];
+    return "".concat(d, "/").concat(m, "/").concat(y);
+}
+function workshopStatusText(o) {
+    if (o.isDelivered)
+        return "Delivered ✓";
+    if (!o.workshopStatus)
+        return "-";
+    if (o.workshopStatus === "done")
+        return "Ready ✓";
+    var overdue = o.workshopDueDate && o.workshopDueDate <= todayStr();
+    return overdue ? "Pending (Due ".concat(formatDateDMY(o.workshopDueDate), " \u2014 overdue)") : "Pending (Due ".concat(formatDateDMY(o.workshopDueDate), ")");
+}
+function saveAddOrder(shouldPrint) {
+    var c = customers.find(function (x) { return x.id === currentCustomerId; });
+    var framePrice = parseFloat(document.getElementById("m_frameprice").value) || 0;
+    var piecePrice = parseFloat(document.getElementById("m_pieceprice").value) || 0;
+    var totalPrice = parseFloat(document.getElementById("m_totalprice").value) || (framePrice + piecePrice);
+    var isInstallment = document.getElementById("m_isinstallment").checked;
+    var advancePaid = 0, balanceDue = 0;
+    if (isInstallment) {
+        advancePaid = parseFloat(document.getElementById("m_advance").value) || 0;
+        balanceDue = Math.max(0, totalPrice - advancePaid);
+    }
+    var addToWorkshop = document.getElementById("m_addworkshop").checked;
+    var workshopDueDate = document.getElementById("m_workshopdate").value;
+    if (addToWorkshop && !workshopDueDate) {
+        showAlert("Please choose a Due Date for the workshop, or uncheck 'Add to Workshop'.");
+        return;
+    }
+    var newOrder = {
+        id: uid(), date: todayStr(), type: "glasses",
+        frame: document.getElementById("m_frame").value.trim(),
+        lensType: document.getElementById("m_lens").value.trim(),
+        quality: document.getElementById("m_quality").value.trim(),
+        framePrice: framePrice,
+        piecePrice: piecePrice,
+        price: totalPrice,
+        isInstallment: isInstallment,
+        advancePaid: advancePaid,
+        balanceDue: balanceDue,
+        workshopStatus: addToWorkshop ? "pending" : null,
+        workshopDueDate: addToWorkshop ? workshopDueDate : null,
+        notes: document.getElementById("m_ordernotes").value.trim(),
+    };
+    c.orders = c.orders || [];
+    c.orders.push(newOrder);
+    saveCustomers(customers);
+    closeModal();
+    renderCustomerDetailPage();
+    if (shouldPrint)
+        showBillView(newOrder.id);
+}
+/* --------------------- New Lens Order modal (Contact / Fashion) --------------------- */
+var LENS_QUALITY_OPTIONS = ["One Day", "Daily Disposable", "Weekly", "Bi-Weekly", "Monthly", "Extended Wear", "Yearly (Conventional)"];
+var pendingLensOrderCategory = null;
+var pendingLensOrderSubtype = null;
+function openAddLensOrder() {
+    pendingLensOrderCategory = null;
+    pendingLensOrderSubtype = null;
+    var qualityHtml = LENS_QUALITY_OPTIONS.map(function (q) { return "<option value=\"".concat(esc(q), "\">").concat(esc(q), "</option>"); }).join("");
+    var body = "\n    <label class=\"field-label\">Brand Name *</label>\n    <input type=\"text\" id=\"lo_brand\" placeholder=\"e.g. Bausch &amp; Lomb, Acuvue\" style=\"margin-bottom:12px;\">\n\n    <label class=\"field-label\">Lens Category</label>\n    <div class=\"lens-toggle\">\n      <div class=\"lens-option\" id=\"lo_cat_contact\" onclick=\"pickLensOrderCategory('contact')\">Contact Lens</div>\n      <div class=\"lens-option\" id=\"lo_cat_fashion\" onclick=\"pickLensOrderCategory('fashion')\">Fashion Lens</div>\n    </div>\n\n    <div id=\"lensDynamicFields\" style=\"margin-top:10px;\"></div>\n\n    <label class=\"field-label\" style=\"margin-top:12px;\">Quality / Wear Duration</label>\n    <select id=\"lo_quality\" style=\"margin-bottom:12px;\">\n      <option value=\"\">\u2014 Select \u2014</option>\n      ".concat(qualityHtml, "\n    </select>\n\n    <label class=\"field-label\">Price (").concat(esc(settings.currency), ")</label>\n    <input type=\"number\" id=\"lo_price\" placeholder=\"e.g. 1500\" style=\"margin-bottom:12px;\">\n\n    <label class=\"field-label\">Notes</label>\n    <input type=\"text\" id=\"lo_notes\" placeholder=\"optional\">\n  ");
+    var footer = "\n    <button class=\"btn btn-primary\" onclick=\"saveLensOrder(false)\">Save Order</button>\n    <button class=\"btn btn-accent\" onclick=\"saveLensOrder(true)\">".concat(icon("printer", 13), " Save &amp; Print</button>\n    <button class=\"btn btn-outline\" onclick=\"closeModal()\">Cancel</button>\n  ");
+    openModal("New Lens Order", body, footer);
+    renderLensDynamicFields();
+}
+function pickLensOrderCategory(val) {
+    pendingLensOrderCategory = val;
+    pendingLensOrderSubtype = null;
+    document.getElementById("lo_cat_contact").classList.toggle("active", val === "contact");
+    document.getElementById("lo_cat_fashion").classList.toggle("active", val === "fashion");
+    renderLensDynamicFields();
+}
+function pickLensOrderSubtype(val) {
+    pendingLensOrderSubtype = val;
+    renderLensDynamicFields();
+}
+function renderLensDynamicFields() {
+    var el = document.getElementById("lensDynamicFields");
+    if (!el)
+        return;
+    if (pendingLensOrderCategory === "contact") {
+        el.innerHTML = "\n      <label class=\"field-label\">Lens Type</label>\n      <div class=\"lens-toggle\" style=\"margin-bottom:10px;\">\n        <div class=\"lens-option ".concat(pendingLensOrderSubtype === "transparent" ? "active" : "", "\" onclick=\"pickLensOrderSubtype('transparent')\">Transparent</div>\n        <div class=\"lens-option ").concat(pendingLensOrderSubtype === "colored" ? "active" : "", "\" onclick=\"pickLensOrderSubtype('colored')\">Colored</div>\n      </div>\n      ").concat(pendingLensOrderSubtype ? "\n        <label class=\"field-label\">Lens Number</label>\n        <input type=\"text\" id=\"lo_lensnumber\" placeholder=\"e.g. -2.00\" style=\"margin-bottom:10px;\">\n        ".concat(pendingLensOrderSubtype === "colored" ? "\n          <label class=\"field-label\">Colour</label>\n          <input type=\"text\" id=\"lo_colour\" placeholder=\"e.g. Hazel, Blue\">\n        " : "", "\n      ") : "", "\n    ");
+    }
+    else if (pendingLensOrderCategory === "fashion") {
+        el.innerHTML = "\n      <label class=\"field-label\">Colour</label>\n      <input type=\"text\" id=\"lo_colour\" placeholder=\"e.g. Grey, Green\">\n    ";
+    }
+    else {
+        el.innerHTML = "<p style=\"font-size:12px; color:var(--text-muted); margin:4px 0 0 0;\">Select a lens category above to continue.</p>";
+    }
+}
+function saveLensOrder(shouldPrint) {
+    var c = customers.find(function (x) { return x.id === currentCustomerId; });
+    var brand = document.getElementById("lo_brand").value.trim();
+    if (!brand) {
+        showAlert("Brand Name is required.");
+        return;
+    }
+    if (!pendingLensOrderCategory) {
+        showAlert("Please select a lens category (Contact or Fashion).");
+        return;
+    }
+    if (pendingLensOrderCategory === "contact" && !pendingLensOrderSubtype) {
+        showAlert("Please select Transparent or Colored.");
+        return;
+    }
+    var lensNumberEl = document.getElementById("lo_lensnumber");
+    var colourEl = document.getElementById("lo_colour");
+    var price = parseFloat(document.getElementById("lo_price").value) || 0;
+    var newOrder = {
+        id: uid(), date: todayStr(), type: "lens",
+        brand: brand,
+        lensCategory: pendingLensOrderCategory,
+        lensSubType: pendingLensOrderCategory === "contact" ? pendingLensOrderSubtype : null,
+        lensNumber: lensNumberEl ? lensNumberEl.value.trim() : "",
+        colour: colourEl ? colourEl.value.trim() : "",
+        quality: document.getElementById("lo_quality").value,
+        price: price,
+        notes: document.getElementById("lo_notes").value.trim(),
+    };
+    c.orders = c.orders || [];
+    c.orders.push(newOrder);
+    saveCustomers(customers);
+    closeModal();
+    renderCustomerDetailPage();
+    if (shouldPrint)
+        showBillView(newOrder.id);
+}
+function lensOrderDetailText(o) {
+    var parts = [];
+    if (o.lensCategory === "contact") {
+        if (o.lensSubType)
+            parts.push(o.lensSubType === "colored" ? "Colored" : "Transparent");
+        if (o.lensNumber)
+            parts.push("#" + o.lensNumber);
+        if (o.colour)
+            parts.push(o.colour);
+    }
+    else if (o.lensCategory === "fashion") {
+        if (o.colour)
+            parts.push(o.colour);
+    }
+    return parts.length ? parts.join(" • ") : "-";
+}
+/* --------------------- Print Bill (in-app view, no popup) --------------------- */
+function getReceiptPaperCSS(paperSize) {
+    // Scoped to #billPrintArea so it only affects the bill preview/print output,
+    // never the rest of the app's UI.
+    if (paperSize === "58mm") {
+        return "\n      @page{ size:58mm auto; margin:2mm; }\n      #billPrintArea{ width:54mm; max-width:54mm; padding:6px; font-size:10.5px; }\n      #billPrintArea h1{ font-size:14px; margin:4px 0 2px 0; }\n      #billPrintArea .tagline{ font-size:9.5px; }\n      #billPrintArea p{ font-size:10px; margin:3px 0; }\n      #billPrintArea td, #billPrintArea th{ padding:4px 2px; font-size:9.5px; }\n      #billPrintArea .total-row td{ font-size:11px; }\n      #billPrintArea .footer{ font-size:8px; margin-top:16px; }\n    ";
+    }
+    if (paperSize === "80mm") {
+        return "\n      @page{ size:80mm auto; margin:3mm; }\n      #billPrintArea{ width:74mm; max-width:74mm; padding:8px; font-size:11.5px; }\n      #billPrintArea h1{ font-size:16px; margin:5px 0 2px 0; }\n      #billPrintArea .tagline{ font-size:10.5px; }\n      #billPrintArea p{ font-size:11px; margin:4px 0; }\n      #billPrintArea td, #billPrintArea th{ padding:5px 3px; font-size:10.5px; }\n      #billPrintArea .total-row td{ font-size:12.5px; }\n      #billPrintArea .footer{ font-size:9px; margin-top:18px; }\n    ";
+    }
+    return "\n    @page{ size:A4; margin:15mm; }\n    #billPrintArea{ max-width:480px; padding:26px; }\n    #billPrintArea h1{ font-size:21px; margin:6px 0 2px 0; }\n    #billPrintArea .tagline{ font-size:11.5px; color:#666; }\n    #billPrintArea p{ font-size:13px; margin:5px 0; }\n    #billPrintArea td, #billPrintArea th{ padding:7px 4px; font-size:12.5px; }\n    #billPrintArea .total-row td{ font-size:14.5px; }\n    #billPrintArea .footer{ font-size:10px; margin-top:26px; }\n  ";
+}
+var billReturnCustomerId = null;
+function showBillView(orderId) {
+    var c = customers.find(function (cust) { return (cust.orders || []).some(function (o) { return o.id === orderId; }); });
+    if (!c) {
+        showAlert("Order not found.");
+        return;
+    }
+    var o = c.orders.find(function (o) { return o.id === orderId; });
+    var isLens = o.type === "lens";
+    var printedAt = new Date().toLocaleString();
+    var logoHtml = settings.logoDataUrl ? "<img src=\"".concat(settings.logoDataUrl, "\" style=\"height:52px;object-fit:contain;margin-bottom:8px;\">") : "";
+    var itemsTable = isLens ? "\n    <table>\n      <tr><th>Item</th><th>Details</th></tr>\n      <tr><td>Brand</td><td>".concat(esc(o.brand || "-"), "</td></tr>\n      <tr><td>Category</td><td>").concat(esc(o.lensCategory === "contact" ? "Contact Lens" : "Fashion Lens"), "</td></tr>\n      ").concat(o.lensCategory === "contact" ? "<tr><td>Lens Type</td><td>".concat(esc(o.lensSubType === "colored" ? "Colored" : "Transparent"), "</td></tr>") : "", "\n      ").concat(o.lensNumber ? "<tr><td>Lens Number</td><td>".concat(esc(o.lensNumber), "</td></tr>") : "", "\n      ").concat(o.colour ? "<tr><td>Colour</td><td>".concat(esc(o.colour), "</td></tr>") : "", "\n      <tr><td>Quality / Wear Duration</td><td>").concat(esc(o.quality || "-"), "</td></tr>\n      ").concat(o.notes ? "<tr><td>Notes</td><td>".concat(esc(o.notes), "</td></tr>") : "", "\n    </table>\n    <table>\n      <tr><th>Charge</th><th>Amount</th></tr>\n      <tr class=\"total-row\"><td>Total</td><td>").concat(fmtMoney(o.price), "</td></tr>\n    </table>\n  ") : "\n    <table>\n      <tr><th>Item</th><th>Details</th></tr>\n      <tr><td>Frame</td><td>".concat(esc(o.frame || "-"), "</td></tr>\n      <tr><td>Lens Type</td><td>").concat(esc(o.lensType || "-"), "</td></tr>\n      <tr><td>Quality / Brand</td><td>").concat(esc(o.quality || "-"), "</td></tr>\n      ").concat(o.notes ? "<tr><td>Notes</td><td>".concat(esc(o.notes), "</td></tr>") : "", "\n    </table>\n    <table>\n      <tr><th>Charge</th><th>Amount</th></tr>\n      <tr><td>Frame Price</td><td>").concat(fmtMoney(o.framePrice), "</td></tr>\n      <tr><td>Glasses Piece Price</td><td>").concat(fmtMoney(o.piecePrice), "</td></tr>\n      <tr class=\"total-row\"><td>Total</td><td>").concat(fmtMoney(o.price), "</td></tr>\n      ").concat(o.isInstallment ? "\n        <tr><td>Advance Paid</td><td>".concat(fmtMoney(o.advancePaid), "</td></tr>\n        <tr class=\"total-row\"><td>Balance Due</td><td>").concat(fmtMoney(o.balanceDue), "</td></tr>\n      ") : "", "\n    </table>\n  ");
+    currentView = "bill";
+    billReturnCustomerId = c.id;
+    setPage("\n    <div class=\"no-print\" style=\"display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:18px; flex-wrap:wrap;\">\n      <button class=\"btn btn-outline\" onclick=\"closeBillView()\">".concat(icon("arrowLeft", 14), " Back</button>\n      <button class=\"btn btn-primary\" onclick=\"window.print()\">").concat(icon("printer", 14), " Print Bill</button>\n    </div>\n    <style>").concat(getReceiptPaperCSS(settings.receiptPaperSize), "</style>\n    <div id=\"billPrintArea\" style=\"background:#fff; color:#111; margin:0 auto; border-radius:10px; box-shadow:var(--shadow);\">\n      <div style=\"font-family:Arial, Helvetica, sans-serif;\">\n        <div style=\"text-align:center;\">\n          ").concat(logoHtml, "\n          <h1 style=\"margin:6px 0 2px 0;\">").concat(esc(settings.shopName), "</h1>\n          ").concat(settings.shopPhone ? "<div class=\"tagline\" style=\"margin-bottom:2px;\">Tel: ".concat(esc(settings.shopPhone), "</div>") : "", "\n          ").concat(settings.shopEmail ? "<div class=\"tagline\" style=\"margin-bottom:2px;\">Email: ".concat(esc(settings.shopEmail), "</div>") : "", "\n          <div class=\"tagline\">").concat(isLens ? "Lens Order Receipt" : "Eyeglasses Order Receipt", "</div>\n        </div>\n        <hr style=\"border:none; border-top:1px solid #ccc; margin:14px 0;\">\n        <p><b>Date &amp; Time:</b> ").concat(esc(printedAt), "</p>\n        <p><b>Order Date:</b> ").concat(esc(o.date), "</p>\n        <p><b>Customer:</b> ").concat(esc(c.name), " (").concat(esc(c.code), ")</p>\n        <p><b>Phone:</b> ").concat(esc(c.phone || "-"), "</p>\n        ").concat(o.workshopDueDate ? "<p style=\"font-weight:bold; font-size:14px; margin-top:10px;\">Your Order will be Ready At: ".concat(esc(formatDateDMY(o.workshopDueDate)), "</p>") : "", "\n        <div style=\"font-size:0;\">\n          <style>#billPrintArea table{ width:100%; border-collapse:collapse; margin-top:10px; font-size:13px; } #billPrintArea td, #billPrintArea th{ border-bottom:1px solid #e2e2e2; text-align:left; } #billPrintArea .total-row td{ font-weight:bold; border-top:2px solid #111; border-bottom:none; padding-top:10px; }</style>\n          ").concat(itemsTable, "\n        </div>\n        <div class=\"footer\" style=\"text-align:center; color:#888; line-height:1.6; margin-top:26px;\">Made by Developer Zohaib Hassan<br>Email: developerzohaibhassan@gmail.com</div>\n      </div>\n    </div>\n  "));
+    playBillPrintedSound();
+}
+function closeBillView() {
+    if (billReturnCustomerId) {
+        showCustomerDetail(billReturnCustomerId);
+    }
+    else {
+        showDashboard();
+    }
+}
+/* =====================================================================
+   SETTINGS  (shop name, currency, logo, appearance — no revenue/danger zone here)
+   ===================================================================== */
+function showSettings() {
+    currentView = "settings";
+    setActiveNav("settings");
+    pendingTheme = settings.theme;
+    pendingLanguage = settings.language || "en";
+    pendingPaperSize = settings.receiptPaperSize || "A4";
+    var cc = settings.customColors || defaultSettings().customColors;
+    setPage("\n    <div class=\"header-row\">\n      <div><h1 class=\"title\">".concat(esc(t("settings_title")), "</h1><p class=\"subtitle\">").concat(esc(t("settings_subtitle")), "</p></div>\n    </div>\n\n    <div class=\"card\">\n      <div class=\"section-title\" style=\"margin-top:0;\">Language</div>\n      <label class=\"field-label\">App Language</label>\n      <select id=\"s_language\" style=\"max-width:280px;\" onchange=\"pendingLanguage=this.value;\">\n        <option value=\"en\" ").concat(settings.language === 'en' || !settings.language ? 'selected' : '', ">English</option>\n        <option value=\"ur\" ").concat(settings.language === 'ur' ? 'selected' : '', ">\u0627\u0631\u062F\u0648 (Urdu)</option>\n        <option value=\"ar\" ").concat(settings.language === 'ar' ? 'selected' : '', ">\u0627\u0644\u0639\u0631\u0628\u064A\u0629 (Arabic)</option>\n        <option value=\"hi\" ").concat(settings.language === 'hi' ? 'selected' : '', ">\u0939\u093F\u0928\u094D\u0926\u0940 (Hindi)</option>\n      </select>\n      <p style=\"font-size:11.5px; color:var(--text-muted); margin-top:8px;\">Changes the main menu, page titles, and common buttons. Some detailed form fields stay in English.</p>\n    </div>\n\n    <div class=\"card\">\n      <div class=\"section-title\" style=\"margin-top:0;\">Receipt Paper Size</div>\n      <div class=\"theme-toggle\">\n        <div class=\"theme-option ").concat(pendingPaperSize === 'A4' ? 'active' : '', "\" id=\"paper_a4\" onclick=\"pickPaperSize('A4')\">A4 (Full Page)</div>\n        <div class=\"theme-option ").concat(pendingPaperSize === '58mm' ? 'active' : '', "\" id=\"paper_58\" onclick=\"pickPaperSize('58mm')\">Thermal 58mm</div>\n        <div class=\"theme-option ").concat(pendingPaperSize === '80mm' ? 'active' : '', "\" id=\"paper_80\" onclick=\"pickPaperSize('80mm')\">Thermal 80mm</div>\n      </div>\n      <p style=\"font-size:11.5px; color:var(--text-muted); margin-top:10px;\">Choose the paper your receipt printer uses \u2014 this changes how bills are formatted when printed.</p>\n    </div>\n\n    <div class=\"card\">\n      <div class=\"section-title\" style=\"margin-top:0;\">Appearance</div>\n      <label class=\"field-label\">Theme</label>\n      <div class=\"theme-toggle\">\n        <div class=\"theme-option ").concat(settings.theme === 'light' ? 'active' : '', "\" id=\"theme_light\" onclick=\"pickTheme('light')\">").concat(icon("sun", 22), "<div>Light Mode</div></div>\n        <div class=\"theme-option ").concat(settings.theme === 'dark' ? 'active' : '', "\" id=\"theme_dark\" onclick=\"pickTheme('dark')\">").concat(icon("moon", 22), "<div>Dark Mode</div></div>\n        <div class=\"theme-option ").concat(settings.theme === 'colorblind' ? 'active' : '', "\" id=\"theme_cb\" onclick=\"pickTheme('colorblind')\">").concat(icon("eye", 22), "<div>Colorblind-Friendly</div></div>\n        <div class=\"theme-option ").concat(settings.theme === 'custom' ? 'active' : '', "\" id=\"theme_custom\" onclick=\"pickTheme('custom')\">").concat(icon("palette", 22), "<div>Custom (Brand Colours)</div></div>\n      </div>\n      <p style=\"font-size:11.5px; color:var(--text-muted); margin-top:10px;\">\n        <b>Colorblind-Friendly</b> uses a safe colour set that avoids red-green and blue-yellow pairings.\n        <b>Custom</b> lets you use your own brand colours.\n      </p>\n\n      <div id=\"customColorFields\" style=\"display:").concat(settings.theme === 'custom' ? 'block' : 'none', "; margin-top:16px; padding-top:16px; border-top:1px solid var(--border);\">\n        <div class=\"form-row\">\n          <div class=\"form-col\">\n            <label class=\"field-label\">Primary Colour</label>\n            <div class=\"color-swatch-row\">\n              <input type=\"color\" id=\"custom_primary\" value=\"").concat(esc(cc.primary), "\" oninput=\"document.getElementById('custom_primary_hex').innerText = this.value\">\n              <span class=\"color-hex-label\" id=\"custom_primary_hex\">").concat(esc(cc.primary), "</span>\n            </div>\n          </div>\n          <div class=\"form-col\">\n            <label class=\"field-label\">Secondary Colour</label>\n            <div class=\"color-swatch-row\">\n              <input type=\"color\" id=\"custom_secondary\" value=\"").concat(esc(cc.secondary), "\" oninput=\"document.getElementById('custom_secondary_hex').innerText = this.value\">\n              <span class=\"color-hex-label\" id=\"custom_secondary_hex\">").concat(esc(cc.secondary), "</span>\n            </div>\n          </div>\n          <div class=\"form-col\">\n            <label class=\"field-label\">Accent Colour (least used)</label>\n            <div class=\"color-swatch-row\">\n              <input type=\"color\" id=\"custom_accent\" value=\"").concat(esc(cc.accent), "\" oninput=\"document.getElementById('custom_accent_hex').innerText = this.value\">\n              <span class=\"color-hex-label\" id=\"custom_accent_hex\">").concat(esc(cc.accent), "</span>\n            </div>\n          </div>\n        </div>\n        <p style=\"font-size:11.5px; color:var(--text-muted); margin:2px 0 0 0;\">\n          Primary is used for main buttons and the sidebar highlight; Secondary fills the sidebar background; Accent highlights ratings and small details.\n        </p>\n      </div>\n    </div>\n\n    <button class=\"btn btn-primary\" style=\"padding:12px 22px; margin-bottom:20px;\" onclick=\"saveSettingsForm()\">").concat(esc(t("btn_save")), " Settings</button>\n\n    <p style=\"font-size:11.5px; color:var(--text-muted); text-align:center; margin-top:10px;\">\n      Shop name, currency, and logo have moved to Admin \u2192 Admin Settings.<br><br>\n      ").concat(esc(t("footer_stored")), "<br>\n      ").concat(esc(t("footer_madeby")), " &nbsp;\u2022&nbsp; Email: developerzohaibhassan@gmail.com\n    </p>\n  "));
+}
+function pickPaperSize(size) {
+    pendingPaperSize = size;
+    document.getElementById("paper_a4").classList.toggle("active", size === "A4");
+    document.getElementById("paper_58").classList.toggle("active", size === "58mm");
+    document.getElementById("paper_80").classList.toggle("active", size === "80mm");
+}
+function pickTheme(t) {
+    pendingTheme = t;
+    document.getElementById("theme_light").classList.toggle("active", t === "light");
+    document.getElementById("theme_dark").classList.toggle("active", t === "dark");
+    document.getElementById("theme_cb").classList.toggle("active", t === "colorblind");
+    document.getElementById("theme_custom").classList.toggle("active", t === "custom");
+    var cf = document.getElementById("customColorFields");
+    if (cf)
+        cf.style.display = (t === "custom") ? "block" : "none";
+}
+function saveSettingsForm() {
+    settings.theme = pendingTheme;
+    settings.language = pendingLanguage;
+    settings.receiptPaperSize = pendingPaperSize;
+    if (pendingTheme === "custom") {
+        settings.customColors = {
+            primary: document.getElementById("custom_primary").value,
+            secondary: document.getElementById("custom_secondary").value,
+            accent: document.getElementById("custom_accent").value,
+        };
+    }
+    saveSettings(settings);
+    applySettings();
+    showSettings();
+    showAlert("Settings saved. These will remain even after closing and reopening this software.");
+}
+function renderLogoPreview() {
+    var el = document.getElementById("logoPreview");
+    if (!el)
+        return;
+    el.innerHTML = pendingLogoDataUrl
+        ? "<img src=\"".concat(pendingLogoDataUrl, "\" style=\"width:100%;height:100%;object-fit:contain;\">")
+        : DEFAULT_LOGO_SVG;
+}
+function handleLogoUpload(event) {
+    var file = event.target.files[0];
+    if (!file)
+        return;
+    var reader = new FileReader();
+    reader.onload = function () { pendingLogoDataUrl = reader.result; renderLogoPreview(); };
+    reader.readAsDataURL(file);
+}
+function removeLogo() { pendingLogoDataUrl = null; renderLogoPreview(); }
+function saveShopDetailsForm() {
+    settings.shopName = document.getElementById("s_shopname").value.trim() || "OptiCare";
+    settings.shopPhone = document.getElementById("s_shopphone").value.trim();
+    settings.shopEmail = document.getElementById("s_shopemail").value.trim();
+    settings.currency = document.getElementById("s_currency").value.trim() || "Rs.";
+    settings.logoDataUrl = pendingLogoDataUrl;
+    saveSettings(settings);
+    applySettings();
+    showAlert("Shop details saved. These will remain even after closing and reopening this software.");
+    routeAdmin();
+}
+/* =====================================================================
+   ADMIN  (Admin Statistics + Admin Settings — password protected)
+   ===================================================================== */
+function renderAdminLogin() {
+    var label = adminLoginTarget === "settings" ? "Admin Settings" : "Statistics";
+    setPage("\n    <div class=\"lock-screen\">\n      <div class=\"lock-icon\">".concat(icon("lock", 44), "</div>\n      <h1 class=\"title\" style=\"text-align:center;\">").concat(esc(label), " \u2014 Locked</h1>\n      <p class=\"subtitle\" style=\"text-align:center; margin-bottom:20px;\">Enter the admin password to view ").concat(esc(label.toLowerCase()), ".</p>\n      <div class=\"card\" style=\"text-align:left;\">\n        <label class=\"field-label\">Password</label>\n        <input type=\"password\" id=\"admin_login_pw\" placeholder=\"Enter admin password\" onkeydown=\"if(event.key==='Enter') attemptAdminLogin()\">\n        <button class=\"btn btn-primary\" style=\"margin-top:14px; width:100%; justify-content:center;\" onclick=\"attemptAdminLogin()\">Unlock</button>\n      </div>\n    </div>\n  "));
+    document.getElementById("admin_login_pw").focus();
+}
+function attemptAdminLogin() {
+    return __awaiter(this, void 0, void 0, function () {
+        var pw;
+        return __generator(this, function (_a) {
+            switch (_a.label) {
+                case 0:
+                    pw = document.getElementById("admin_login_pw").value;
+                    if (!(pw !== settings.adminPassword)) return [3 /*break*/, 2];
+                    return [4 /*yield*/, showAlert("Incorrect password.")];
+                case 1:
+                    _a.sent();
+                    return [2 /*return*/];
+                case 2:
+                    if (adminLoginTarget === "settings")
+                        settingsAuthed = true;
+                    else
+                        statsAuthed = true;
+                    playAdminUnlockSound();
+                    routeAdmin();
+                    return [2 /*return*/];
+            }
+        });
+    });
+}
+function renderForceChangePassword() {
+    setPage("\n    <div class=\"lock-screen\">\n      <div class=\"lock-icon\">".concat(icon("lock", 44), "</div>\n      <h1 class=\"title\" style=\"text-align:center;\">First-Time Setup Required</h1>\n      <p class=\"subtitle\" style=\"text-align:center; margin-bottom:20px;\">\n        You are using the default admin password. For security, please set your own password before continuing.\n      </p>\n      <div class=\"card\" style=\"text-align:left;\">\n        <label class=\"field-label\">New Admin Password</label>\n        <input type=\"password\" id=\"fc_new\" placeholder=\"At least 4 characters\" style=\"margin-bottom:12px;\">\n        <label class=\"field-label\">Confirm New Password</label>\n        <input type=\"password\" id=\"fc_confirm\" placeholder=\"Re-enter new password\">\n        <button class=\"btn btn-primary\" style=\"margin-top:16px; width:100%; justify-content:center;\" onclick=\"submitForceChangePassword()\">Set Password &amp; Continue</button>\n      </div>\n    </div>\n  "));
+}
+function submitForceChangePassword() {
+    var next = document.getElementById("fc_new").value;
+    var confirmVal = document.getElementById("fc_confirm").value;
+    if (!next || next.length < 4) {
+        showAlert("Password must be at least 4 characters.");
+        return;
+    }
+    if (next === DEFAULT_ADMIN_PASSWORD) {
+        showAlert("Please choose a password different from the default.");
+        return;
+    }
+    if (next !== confirmVal) {
+        showAlert("Passwords do not match.");
+        return;
+    }
+    settings.adminPassword = next;
+    settings.adminPasswordIsDefault = false;
+    saveSettings(settings);
+    showAlert("Admin password set successfully.");
+    routeAdmin();
+}
+function getRangeForFilter(filter) {
+    var now = new Date();
+    var today = todayStr();
+    if (filter === "today")
+        return { start: today, end: today, label: "Today" };
+    if (filter === "yesterday") {
+        var d = new Date(now);
+        d.setDate(d.getDate() - 1);
+        return { start: todayStr(d), end: todayStr(d), label: "Yesterday" };
+    }
+    if (filter === "thismonth") {
+        return { start: today.slice(0, 7) + "-01", end: today, label: "This Month" };
+    }
+    if (filter === "lastmonth") {
+        var firstOfLast = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+        var lastOfLast = new Date(now.getFullYear(), now.getMonth(), 0);
+        return { start: todayStr(firstOfLast), end: todayStr(lastOfLast), label: "Last Month" };
+    }
+    return { start: today, end: today, label: "Today" };
+}
+function computeRangeStats(range) {
+    var revenue = 0, ordersCount = 0, newCustomers = 0;
+    var repeatSet = new Set();
+    customers.forEach(function (c) {
+        var registeredInRange = c.registrationDate >= range.start && c.registrationDate <= range.end;
+        if (registeredInRange)
+            newCustomers++;
+        (c.orders || []).forEach(function (o) {
+            if (o.date >= range.start && o.date <= range.end) {
+                revenue += Number(o.price || 0);
+                ordersCount++;
+                if (!registeredInRange)
+                    repeatSet.add(c.id);
+            }
+        });
+    });
+    return { revenue: revenue, ordersCount: ordersCount, newCustomers: newCustomers, repeatCustomers: repeatSet.size };
+}
+function setAdminFilter(f) { adminFilter = f; renderAdminStatsPage(); }
+function changeAdminPassword() {
+    return __awaiter(this, void 0, void 0, function () {
+        var cur, next, confirmVal;
+        return __generator(this, function (_a) {
+            switch (_a.label) {
+                case 0:
+                    cur = document.getElementById("adm_current").value;
+                    next = document.getElementById("adm_new").value;
+                    confirmVal = document.getElementById("adm_confirm").value;
+                    if (!(cur !== settings.adminPassword)) return [3 /*break*/, 2];
+                    return [4 /*yield*/, showAlert("Current password is incorrect.")];
+                case 1:
+                    _a.sent();
+                    return [2 /*return*/];
+                case 2:
+                    if (!(!next || next.length < 4)) return [3 /*break*/, 4];
+                    return [4 /*yield*/, showAlert("New password must be at least 4 characters.")];
+                case 3:
+                    _a.sent();
+                    return [2 /*return*/];
+                case 4:
+                    if (!(next !== confirmVal)) return [3 /*break*/, 6];
+                    return [4 /*yield*/, showAlert("New password and confirmation do not match.")];
+                case 5:
+                    _a.sent();
+                    return [2 /*return*/];
+                case 6:
+                    settings.adminPassword = next;
+                    settings.adminPasswordIsDefault = false;
+                    saveSettings(settings);
+                    return [4 /*yield*/, showAlert("Admin password changed successfully.")];
+                case 7:
+                    _a.sent();
+                    renderAdminSettingsPage();
+                    return [2 /*return*/];
+            }
+        });
+    });
+}
+function exportAllData() {
+    var payload = { exportedAt: new Date().toISOString(), shopName: settings.shopName, customers: customers };
+    var blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement("a");
+    a.href = url;
+    a.download = "opticare_backup_".concat(todayStr(), ".json");
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    settings.lastBackupDate = todayStr();
+    settings.backupSnoozedUntil = null;
+    saveSettings(settings);
+    if (currentView === "dashboard")
+        showDashboard();
+}
+function resetAllData() {
+    return __awaiter(this, void 0, void 0, function () {
+        return __generator(this, function (_a) {
+            switch (_a.label) {
+                case 0: return [4 /*yield*/, showConfirm("This will permanently delete ALL customers and records. Continue?")];
+                case 1:
+                    if (!(_a.sent()))
+                        return [2 /*return*/];
+                    return [4 /*yield*/, showConfirm("Are you absolutely sure? This cannot be undone.")];
+                case 2:
+                    if (!(_a.sent()))
+                        return [2 /*return*/];
+                    customers = [];
+                    saveCustomers(customers);
+                    showDashboard();
+                    return [2 /*return*/];
+            }
+        });
+    });
+}
+function handleImportFile(event) {
+    var _this = this;
+    var file = event.target.files[0];
+    if (!file)
+        return;
+    var reader = new FileReader();
+    reader.onload = function () { return __awaiter(_this, void 0, void 0, function () {
+        var data, imported, existingCodes, importedCount;
+        return __generator(this, function (_a) {
+            switch (_a.label) {
+                case 0:
+                    try {
+                        data = JSON.parse(reader.result);
+                    }
+                    catch (e) {
+                        showAlert("Could not read this file. Make sure it is a valid JSON backup exported from this software.");
+                        event.target.value = "";
+                        return [2 /*return*/];
+                    }
+                    imported = Array.isArray(data.customers) ? data.customers : (Array.isArray(data) ? data : null);
+                    if (!imported) {
+                        showAlert("This file does not look like a valid OptiCare backup.");
+                        event.target.value = "";
+                        return [2 /*return*/];
+                    }
+                    if (imported.length === 0) {
+                        showAlert("No customer records were found in this file.");
+                        event.target.value = "";
+                        return [2 /*return*/];
+                    }
+                    return [4 /*yield*/, showConfirm];
+                case 1:
+                    if (!(_a.sent())("Import ".concat(imported.length, " customer record(s)? They will be added to your existing ").concat(customers.length, " customer(s)."))) {
+                        event.target.value = "";
+                        return [2 /*return*/];
+                    }
+                    existingCodes = new Set(customers.map(function (c) { return c.code; }));
+                    importedCount = 0;
+                    imported.forEach(function (raw) {
+                        if (!raw || !raw.name)
+                            return;
+                        var newCust = Object.assign({}, raw);
+                        newCust.id = uid();
+                        if (!newCust.code || existingCodes.has(newCust.code))
+                            newCust.code = nextCode(customers.concat([newCust]));
+                        existingCodes.add(newCust.code);
+                        newCust.registrationDate = newCust.registrationDate || todayStr();
+                        newCust.rating = newCust.rating || 3;
+                        newCust.prescriptions = Array.isArray(newCust.prescriptions) ? newCust.prescriptions : [];
+                        newCust.orders = Array.isArray(newCust.orders) ? newCust.orders : [];
+                        customers.push(newCust);
+                        importedCount++;
+                    });
+                    saveCustomers(customers);
+                    showAlert("Import complete: ".concat(importedCount, " customer record(s) added."));
+                    event.target.value = "";
+                    routeAdmin();
+                    return [2 /*return*/];
+            }
+        });
+    }); };
+    reader.readAsText(file);
+}
+/* --------------------------- Start --------------------------- */
+applySettings();
+showDashboard();
+checkTaskReminders();
+function playAdminUnlockSound() { playTone([620, 830, 1050], 90); }
+function playAdminLockSound() { playTone([700, 440], 140); }
+function showAdminStats() {
+    adminLoginTarget = "stats";
+    currentView = "adminstats";
+    setActiveNav("adminstats");
+    routeAdmin();
+}
+function showAdminSettings() {
+    adminLoginTarget = "settings";
+    currentView = "adminsettings";
+    setActiveNav("adminsettings");
+    routeAdmin();
+}
+function routeAdmin() {
+    var isAuthed = adminLoginTarget === "settings" ? settingsAuthed : statsAuthed;
+    if (!isAuthed) {
+        renderAdminLogin();
+        return;
+    }
+    if (settings.adminPasswordIsDefault) {
+        renderForceChangePassword();
+        return;
+    }
+    if (adminLoginTarget === "settings")
+        renderAdminSettingsPage();
+    else
+        renderAdminStatsPage();
+}
+function renderAdminStatsPage() {
+    var range = getRangeForFilter(adminFilter);
+    var s = computeRangeStats(range);
+    // Chart reflects whichever filter is selected. A single-day filter
+    // (Today / Yesterday) has nothing to plot as a trend, so we show a
+    // daily revenue breakdown only for the multi-day filters.
+    var isMultiDay = (adminFilter === "thismonth" || adminFilter === "lastmonth");
+    var chartHtml = "";
+    if (isMultiDay) {
+        var dailyRevenue = computeDailySeries(range.start, range.end, function (dateStr) {
+            var sum = 0;
+            customers.forEach(function (c) { return (c.orders || []).forEach(function (o) { if (o.date === dateStr)
+                sum += Number(o.price || 0); }); });
+            return [sum];
+        });
+        chartHtml = "\n      <div class=\"card\">\n        <div class=\"chart-card-title\">Daily Revenue \u2014 ".concat(esc(range.label), "</div>\n        <div class=\"chart-card-sub\">Revenue recorded for each day in this period</div>\n        <div class=\"chart-scroll\">").concat(groupedBarChart(dailyRevenue, ["#7C4DFF"], 170, 40), "</div>\n      </div>");
+    }
+    else {
+        chartHtml = "\n      <div class=\"card\">\n        <div class=\"chart-card-title\">Daily Trend</div>\n        <div class=\"chart-card-sub\">Select \"This Month\" or \"Last Month\" above to see a day-by-day revenue chart. A single day has nothing to trend.</div>\n      </div>";
+    }
+    function tabBtn(key, label) {
+        return "<button class=\"btn ".concat(adminFilter === key ? 'btn-primary' : 'btn-outline', " btn-small\" onclick=\"setAdminFilter('").concat(key, "')\">").concat(label, "</button>");
+    }
+    // --- Sales breakdown (glasses vs lens revenue, avg order value) ---
+    var glassesPct = s.revenue > 0 ? Math.round((s.glassesRevenue / s.revenue) * 100) : 0;
+    var lensPct = s.revenue > 0 ? Math.round((s.lensRevenue / s.revenue) * 100) : 0;
+    // --- Month-over-month (always current vs previous calendar month, independent of the tab filter above) ---
+    var mom = computeMonthOverMonth();
+    function momRow(label, curVal, prevVal, pct, isMoney) {
+        var up = pct >= 0;
+        var arrow = up ? "▲" : "▼";
+        var color = up ? "var(--success)" : "var(--danger)";
+        var curDisplay = isMoney ? fmtMoney(curVal) : curVal;
+        var prevDisplay = isMoney ? fmtMoney(prevVal) : prevVal;
+        return "\n      <div style=\"display:flex; justify-content:space-between; align-items:center; padding:10px 0; border-bottom:1px solid var(--border);\">\n        <div>\n          <div style=\"font-size:12.5px; color:var(--text-muted); font-weight:600;\">".concat(esc(label), "</div>\n          <div style=\"font-size:17px; font-weight:700; margin-top:2px;\">").concat(curDisplay, " <span style=\"font-size:11.5px; color:var(--text-muted); font-weight:500;\">vs ").concat(prevDisplay, " last month</span></div>\n        </div>\n        <div style=\"color:").concat(color, "; font-weight:700; font-size:13px; white-space:nowrap;\">").concat(arrow, " ").concat(Math.abs(pct).toFixed(1), "%</div>\n      </div>");
+    }
+    // --- Customer rating distribution (all-time, not tied to the tab filter) ---
+    var ratingDist = computeRatingDistribution();
+    var ratingMax = Math.max.apply(Math, __spreadArray([1], Object.values(ratingDist), false));
+    var ratingLabels = { 1: "1★ Low spender", 2: "2★ Below average", 3: "3★ Average", 4: "4★ High spender", 5: "5★ Premium spender" };
+    var ratingHtml = [5, 4, 3, 2, 1].map(function (r) { return "\n    <div style=\"display:flex; align-items:center; gap:10px; margin-bottom:8px;\">\n      <div style=\"width:130px; font-size:12px; color:var(--text-muted); flex-shrink:0;\">".concat(ratingLabels[r], "</div>\n      <div style=\"flex:1; background:var(--bg-main); border-radius:5px; overflow:hidden; height:16px;\">\n        <div style=\"width:").concat((ratingDist[r] / ratingMax) * 100, "%; background:var(--accent); height:100%;\"></div>\n      </div>\n      <div style=\"width:24px; text-align:right; font-size:12.5px; font-weight:700;\">").concat(ratingDist[r], "</div>\n    </div>"); }).join("");
+    setPage("\n    <div class=\"header-row\">\n      <div><h1 class=\"title\">Statistics</h1><p class=\"subtitle\">Business statistics \u2014 revenue, orders, and customer activity</p></div>\n      <button class=\"btn btn-outline\" onclick=\"lockAdminStats()\">".concat(icon("lock", 14), " Lock</button>\n    </div>\n\n    <div class=\"filter-tabs\">\n      ").concat(tabBtn("today", "Today")).concat(tabBtn("yesterday", "Yesterday")).concat(tabBtn("thismonth", "This Month")).concat(tabBtn("lastmonth", "Last Month"), "\n    </div>\n\n    <div class=\"section-title\" style=\"margin-top:0;\">Overview</div>\n    <div class=\"stats-grid\">\n      <div class=\"stat-card\"><div class=\"stat-bar\" style=\"background:#7C4DFF\"></div>\n        <div class=\"stat-body\"><div class=\"stat-title\">REVENUE</div>\n        <div class=\"stat-value\" style=\"font-size:22px;\">").concat(fmtMoney(s.revenue), "</div><div class=\"stat-sub\">").concat(esc(range.label), "</div></div></div>\n\n      <div class=\"stat-card\"><div class=\"stat-bar\" style=\"background:var(--success)\"></div>\n        <div class=\"stat-body\"><div class=\"stat-title\">ORDERS MADE</div>\n        <div class=\"stat-value\">").concat(s.ordersCount, "</div><div class=\"stat-sub\">").concat(esc(range.label), "</div></div></div>\n\n      <div class=\"stat-card\"><div class=\"stat-bar\" style=\"background:var(--primary)\"></div>\n        <div class=\"stat-body\"><div class=\"stat-title\">REGISTERED CUSTOMERS</div>\n        <div class=\"stat-value\">").concat(s.newCustomers, "</div><div class=\"stat-sub\">").concat(esc(range.label), "</div></div></div>\n\n      <div class=\"stat-card\"><div class=\"stat-bar\" style=\"background:var(--accent)\"></div>\n        <div class=\"stat-body\"><div class=\"stat-title\">REPEATED CUSTOMERS</div>\n        <div class=\"stat-value\">").concat(s.repeatCustomers, "</div><div class=\"stat-sub\">").concat(esc(range.label), "</div></div></div>\n    </div>\n\n    <div class=\"section-title\">Sales Breakdown</div>\n    <div class=\"stats-grid\">\n      <div class=\"stat-card\"><div class=\"stat-bar\" style=\"background:var(--primary)\"></div>\n        <div class=\"stat-body\"><div class=\"stat-title\">AVG ORDER VALUE</div>\n        <div class=\"stat-value\" style=\"font-size:20px;\">").concat(fmtMoney(s.avgOrderValue), "</div><div class=\"stat-sub\">").concat(esc(range.label), "</div></div></div>\n\n      <div class=\"stat-card\"><div class=\"stat-bar\" style=\"background:#7C4DFF\"></div>\n        <div class=\"stat-body\"><div class=\"stat-title\">EYEGLASSES REVENUE</div>\n        <div class=\"stat-value\" style=\"font-size:20px;\">").concat(fmtMoney(s.glassesRevenue), "</div><div class=\"stat-sub\">").concat(glassesPct, "% of total \u2014 ").concat(esc(range.label), "</div></div></div>\n\n      <div class=\"stat-card\"><div class=\"stat-bar\" style=\"background:var(--accent)\"></div>\n        <div class=\"stat-body\"><div class=\"stat-title\">LENS REVENUE</div>\n        <div class=\"stat-value\" style=\"font-size:20px;\">").concat(fmtMoney(s.lensRevenue), "</div><div class=\"stat-sub\">").concat(lensPct, "% of total \u2014 ").concat(esc(range.label), "</div></div></div>\n    </div>\n\n    <div class=\"section-title\">Daily Trend</div>\n    ").concat(chartHtml, "\n\n    <div class=\"section-title\">Month-over-Month</div>\n    <p class=\"subtitle\" style=\"margin:-6px 0 10px 0;\">Always compares the current calendar month to the previous one, regardless of the filter tabs above.</p>\n    <div class=\"card\">\n      ").concat(momRow("Revenue", mom.revenue.cur, mom.revenue.prev, mom.revenue.pct, true), "\n      ").concat(momRow("Orders Made", mom.orders.cur, mom.orders.prev, mom.orders.pct, false), "\n    </div>\n\n    <div class=\"section-title\">Customer Base by Rating</div>\n    <p class=\"subtitle\" style=\"margin:-6px 0 10px 0;\">All registered customers, all-time \u2014 not affected by the filter tabs above.</p>\n    <div class=\"card\">").concat(ratingHtml, "</div>\n  "));
+}
+function renderAdminSettingsPage() {
+    pendingLogoDataUrl = settings.logoDataUrl;
+    setPage("\n    <div class=\"header-row\">\n      <div><h1 class=\"title\">Admin Settings</h1><p class=\"subtitle\">Shop details, password, backups, and data controls</p></div>\n      <button class=\"btn btn-outline\" onclick=\"lockAdminSettings()\">".concat(icon("lock", 14), " Lock</button>\n    </div>\n\n    <div class=\"card\">\n      <div style=\"font-weight:700; margin-bottom:10px; font-size:13.5px;\">Shop Details</div>\n      <div class=\"form-row\">\n        <div class=\"form-col\"><label class=\"field-label\">Shop Name</label>\n          <input type=\"text\" id=\"s_shopname\" value=\"").concat(esc(settings.shopName), "\" placeholder=\"e.g. Vision Point Opticians\"></div>\n        <div class=\"form-col\"><label class=\"field-label\">Shop Phone Number</label>\n          <input type=\"tel\" id=\"s_shopphone\" value=\"").concat(esc(settings.shopPhone), "\" placeholder=\"e.g. 042-1234567\"></div>\n      </div>\n      <div class=\"form-row\">\n        <div class=\"form-col\"><label class=\"field-label\">Shop Gmail / Email</label>\n          <input type=\"text\" id=\"s_shopemail\" value=\"").concat(esc(settings.shopEmail), "\" placeholder=\"e.g. yourshop@gmail.com\"></div>\n        <div class=\"form-col\"><label class=\"field-label\">Currency Symbol</label>\n          <input type=\"text\" id=\"s_currency\" value=\"").concat(esc(settings.currency), "\" placeholder=\"e.g. Rs. or $\"></div>\n      </div>\n      <div class=\"form-row\">\n        <div class=\"form-col\"><label class=\"field-label\">Optometrist / Checked-By Name</label>\n          <input type=\"text\" id=\"s_optometrist\" value=\"").concat(esc(settings.optometristName), "\" placeholder=\"e.g. Dr. Ali Raza\"></div>\n      </div>\n      <p style=\"font-size:11.5px; color:var(--text-muted); margin:2px 0 14px 0;\">Shop name, phone, and email are used across the app and printed on every bill. The optometrist name is printed on the eyesight prescription.</p>\n\n      <div style=\"font-weight:700; margin-bottom:10px; font-size:13.5px;\">Shop Logo</div>\n      <div style=\"display:flex; align-items:center; gap:16px; flex-wrap:wrap; margin-bottom:14px;\">\n        <div id=\"logoPreview\" style=\"width:100px; height:52px; border-radius:10px; border:1px solid var(--border); display:flex; align-items:center; justify-content:center; overflow:hidden; color:var(--primary); background:#FFFFFF; padding:5px 7px;\"></div>\n        <div style=\"display:flex; gap:8px;\">\n          <input type=\"file\" id=\"s_logo_file\" accept=\"image/*\" style=\"display:none;\" onchange=\"handleLogoUpload(event)\">\n          <button class=\"btn btn-outline btn-small\" onclick=\"document.getElementById('s_logo_file').click()\">").concat(icon("upload", 13), " Upload Logo</button>\n          <button class=\"btn btn-outline btn-small\" style=\"color:var(--danger);\" onclick=\"removeLogo()\">").concat(icon("trash", 13), " Remove</button>\n        </div>\n      </div>\n\n      <button class=\"btn btn-primary btn-small\" onclick=\"saveShopDetailsForm()\">Save Shop Details</button>\n    </div>\n\n    <div class=\"card\">\n      <div style=\"font-weight:700; margin-bottom:10px; font-size:13.5px;\">Change Admin Password</div>\n      <div class=\"form-row\">\n        <div class=\"form-col\"><label class=\"field-label\">Current Password</label><input type=\"password\" id=\"adm_current\"></div>\n        <div class=\"form-col\"><label class=\"field-label\">New Password</label><input type=\"password\" id=\"adm_new\"></div>\n        <div class=\"form-col\"><label class=\"field-label\">Confirm New Password</label><input type=\"password\" id=\"adm_confirm\"></div>\n      </div>\n      <button class=\"btn btn-primary btn-small\" onclick=\"changeAdminPassword()\">Update Password</button>\n    </div>\n\n    <div class=\"card\">\n      <div style=\"font-weight:700; margin-bottom:10px; font-size:13.5px;\">Export All Data</div>\n      <p style=\"font-size:12.5px; color:var(--text-muted); margin:0 0 12px 0;\">Download a backup file (.json) containing every customer, prescription, and order.</p>\n      <button class=\"btn btn-outline btn-small\" onclick=\"exportAllData()\">").concat(icon("download", 13), " Export Data</button>\n    </div>\n\n    <div class=\"card\">\n      <div style=\"font-weight:700; margin-bottom:10px; font-size:13.5px;\">Import Data</div>\n      <p style=\"font-size:12.5px; color:var(--text-muted); margin:0 0 12px 0;\">Import customers from a previously exported backup file (.json). Imported records are added to your existing data \u2014 nothing already saved is removed.</p>\n      <input type=\"file\" id=\"adm_import_file\" accept=\"application/json,.json\" class=\"import-input\" onchange=\"handleImportFile(event)\">\n      <button class=\"btn btn-outline btn-small\" onclick=\"document.getElementById('adm_import_file').click()\">").concat(icon("upload", 13), " Import Data</button>\n    </div>\n\n    <div class=\"card danger-zone\">\n      <div style=\"font-weight:700; color:var(--danger); margin-bottom:2px;\">Danger Zone</div>\n      <p>Permanently delete every customer, prescription, and order stored in this browser. This cannot be undone \u2014 export a backup first.</p>\n      <button class=\"btn btn-danger btn-small\" onclick=\"resetAllData()\">").concat(icon("trash", 13), " Delete All Data</button>\n    </div>\n  "));
+    renderLogoPreview();
+}
+function lockAdminStats() { statsAuthed = false; playAdminLockSound(); showDashboard(); }
+function lockAdminSettings() { settingsAuthed = false; playAdminLockSound(); showDashboard(); }
+function pctChange(curVal, prevVal) {
+    if (prevVal === 0)
+        return curVal > 0 ? 100 : 0;
+    return ((curVal - prevVal) / prevVal) * 100;
+}
+function computeMonthOverMonth() {
+    var cur = computeRangeStats(getRangeForFilter("thismonth"));
+    var prev = computeRangeStats(getRangeForFilter("lastmonth"));
+    return {
+        revenue: { cur: cur.revenue, prev: prev.revenue, pct: pctChange(cur.revenue, prev.revenue) },
+        orders: { cur: cur.ordersCount, prev: prev.ordersCount, pct: pctChange(cur.ordersCount, prev.ordersCount) },
+    };
+}
+function computeRatingDistribution() {
+    var dist = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
+    customers.forEach(function (c) { var r = c.rating || 3; if (dist[r] !== undefined)
+        dist[r]++; });
+    return dist;
+}
+function daysSinceDate(dateStr) {
+    if (!dateStr)
+        return Infinity;
+    var then = new Date(dateStr);
+    var now = new Date(todayStr());
+    return Math.floor((now - then) / (1000 * 60 * 60 * 24));
+}
+function shouldShowBackupReminder() {
+    if (daysSinceDate(settings.lastBackupDate) < BACKUP_REMINDER_INTERVAL_DAYS)
+        return false;
+    if (settings.backupSnoozedUntil && todayStr() <= settings.backupSnoozedUntil)
+        return false;
+    return true;
+}
+function snoozeBackupReminder() {
+    var d = new Date();
+    d.setDate(d.getDate() + 1);
+    settings.backupSnoozedUntil = todayStr(d);
+    saveSettings(settings);
+    showDashboard();
+}
+function showAlert(message) {
+    return new Promise(function (resolve) {
+        alertMessageEl.textContent = message;
+        alertButtonsEl.innerHTML = "<button class=\"btn btn-primary\" id=\"alertOkBtn\">OK</button>";
+        alertOverlay.classList.add("open");
+        var okBtn = document.getElementById("alertOkBtn");
+        var finish = function () { alertOverlay.classList.remove("open"); okBtn.removeEventListener("click", finish); resolve(true); };
+        okBtn.addEventListener("click", finish);
+        okBtn.focus();
+    });
+}
+function showConfirm(message) {
+    return new Promise(function (resolve) {
+        alertMessageEl.textContent = message;
+        alertButtonsEl.innerHTML = "<button class=\"btn btn-outline\" id=\"alertCancelBtn\">Cancel</button><button class=\"btn btn-danger\" id=\"alertOkBtn\">OK</button>";
+        alertOverlay.classList.add("open");
+        var okBtn = document.getElementById("alertOkBtn");
+        var cancelBtn = document.getElementById("alertCancelBtn");
+        var finish = function (result) {
+            alertOverlay.classList.remove("open");
+            okBtn.removeEventListener("click", onOk);
+            cancelBtn.removeEventListener("click", onCancel);
+            resolve(result);
+        };
+        var onOk = function () { return finish(true); };
+        var onCancel = function () { return finish(false); };
+        okBtn.addEventListener("click", onOk);
+        cancelBtn.addEventListener("click", onCancel);
+        okBtn.focus();
+    });
+}
+function updateWorkshopNavBadge() {
+    var badge = document.getElementById("workshopOverdueBadge");
+    if (!badge)
+        return;
+    var today = todayStr();
+    var overdueCount = computeWorkshopPending().filter(function (_a) {
+        var o = _a.order;
+        return o.workshopDueDate && o.workshopDueDate <= today;
+    }).length;
+    if (overdueCount > 0) {
+        badge.textContent = overdueCount;
+        badge.style.display = "inline-block";
+    }
+    else {
+        badge.style.display = "none";
+    }
+}
+function updateTodoNavBadge() {
+    var badge = document.getElementById("todoOverdueBadge");
+    if (!badge)
+        return;
+    var overdueCount = tasks.filter(function (t) { return t.reminderFired && !t.completed; }).length;
+    if (overdueCount > 0) {
+        badge.textContent = overdueCount;
+        badge.style.display = "inline-block";
+    }
+    else {
+        badge.style.display = "none";
+    }
+}
+function barPath(x, y, w, h, r) {
+    r = Math.min(r, w / 2, Math.max(h, 0));
+    if (h <= 0)
+        return "";
+    if (h < r * 2)
+        r = h / 2;
+    return "M".concat(x, ",").concat(y + h, " L").concat(x, ",").concat(y + r, " Q").concat(x, ",").concat(y, " ").concat(x + r, ",").concat(y, " L").concat(x + w - r, ",").concat(y, " Q").concat(x + w, ",").concat(y, " ").concat(x + w, ",").concat(y + r, " L").concat(x + w, ",").concat(y + h, " Z");
+}
+var alertOverlay = document.getElementById("alertOverlay");
+var alertMessageEl = document.getElementById("alertMessage");
+var alertButtonsEl = document.getElementById("alertButtons");
+updateWorkshopNavBadge();
+updateTodoNavBadge();
+function playToneWav(freqs, ms) {
+    try {
+        var rate_1 = 8000, per_1 = Math.floor(rate_1 * ms / 1000 * 0.8), n = per_1 * freqs.length, bytes_1 = [];
+        var w32 = function (v) { return [v & 255, (v >> 8) & 255, (v >> 16) & 255, (v >> 24) & 255]; }, w16 = function (v) { return [v & 255, (v >> 8) & 255]; };
+        var hdr = [82, 73, 70, 70].concat(w32(36 + n), [87, 65, 86, 69, 102, 109, 116, 32], w32(16), w16(1), w16(1), w32(rate_1), w32(rate_1), w16(1), w16(8), [100, 97, 116, 97], w32(n));
+        freqs.forEach(function (f) { for (var i = 0; i < per_1; i++) {
+            var env = Math.min(1, i / 80, (per_1 - i) / 200);
+            bytes_1.push(Math.round(128 + 90 * env * Math.sin(2 * Math.PI * f * i / rate_1)));
+        } });
+        var s_1 = "";
+        hdr.concat(bytes_1).forEach(function (b) { s_1 += String.fromCharCode(b); });
+        var a = new Audio("data:audio/wav;base64," + btoa(s_1));
+        a.play();
+    }
+    catch (e) { }
+}
+</script>
+</body>
+</html>
